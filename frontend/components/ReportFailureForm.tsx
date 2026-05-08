@@ -27,7 +27,7 @@ const formSchema = z.object({
 });
 
 interface ReportFailureFormProps {
-  assetId: string;
+  assetId: string | number;
   assetName: string;
   onSuccess?: () => void;
 }

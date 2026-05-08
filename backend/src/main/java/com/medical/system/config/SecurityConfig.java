@@ -45,8 +45,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
                         
                         // Role-based restrictions
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/assets/*/report-failure").hasAnyRole("DOCTOR", "ADMIN")
                         .requestMatchers("/api/service-requests/**").hasAnyRole("ENGINEER", "ADMIN")
+                        .requestMatchers("/api/inventory/**").hasAnyRole("ENGINEER", "ADMIN")
                         
                         // General secured endpoints
                         .requestMatchers("/api/assets/**").authenticated()

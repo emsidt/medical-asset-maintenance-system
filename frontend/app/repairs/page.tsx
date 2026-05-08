@@ -89,8 +89,8 @@ export default function RepairsPage() {
             ) : (
               activeRequests.map((req) => (
                 <TableRow key={req.id}>
-                  <TableCell className="font-medium">{req.asset?.name}</TableCell>
-                  <TableCell>{req.reportedBy?.username}</TableCell>
+                  <TableCell className="font-medium">{req.asset?.name ?? req.assetName ?? 'N/A'}</TableCell>
+                  <TableCell>{req.reportedBy?.username ?? req.reportedByUsername ?? 'N/A'}</TableCell>
                   <TableCell className="max-w-xs truncate" title={req.description}>
                     {req.description}
                   </TableCell>
@@ -141,7 +141,7 @@ export default function RepairsPage() {
               ) : (
                 completedRequests.map((req) => (
                   <TableRow key={req.id}>
-                    <TableCell className="font-medium">{req.asset?.name}</TableCell>
+                    <TableCell className="font-medium">{req.asset?.name ?? req.assetName ?? 'N/A'}</TableCell>
                     <TableCell className="max-w-xs truncate" title={req.description}>
                       {req.description}
                     </TableCell>

@@ -9,7 +9,7 @@ const API_URL = process.env.API_URL || "http://localhost:8080/api";
  /**
   * Server Action to report an asset failure.
   */
- export async function reportAssetFailure(assetId: string, description: string) {
+ export async function reportAssetFailure(assetId: string | number, description: string) {
    const token = cookies().get("token")?.value;
  
    if (!token) {

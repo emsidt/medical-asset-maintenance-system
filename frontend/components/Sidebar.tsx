@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, Wrench, Settings, LogOut, ClipboardList } from 'lucide-react';
+import { Boxes, LayoutDashboard, Package, Settings, LogOut, ClipboardList, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logout } from '@/app/actions/auth';
 import { toast } from 'sonner';
@@ -20,6 +20,8 @@ export function Sidebar({ userRole }: SidebarProps) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['ADMIN', 'DOCTOR', 'ENGINEER'] },
     { name: 'My Assets', href: '/assets', icon: Package, roles: ['ADMIN', 'DOCTOR'] },
     { name: 'Repair Requests', href: '/repairs', icon: ClipboardList, roles: ['ADMIN', 'ENGINEER'] },
+    { name: 'Inventory', href: '/inventory', icon: Boxes, roles: ['ADMIN', 'ENGINEER'] },
+    { name: 'Users', href: '/users', icon: Users, roles: ['ADMIN'] },
     { name: 'Settings', href: '/settings', icon: Settings, roles: ['ADMIN', 'DOCTOR', 'ENGINEER'] },
 
   ];

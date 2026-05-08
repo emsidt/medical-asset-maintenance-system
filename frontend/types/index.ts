@@ -11,6 +11,7 @@ export interface FailureReportRequest {
 }
 
 export interface User {
+  id?: string | number;
   username: string;
   role: 'ADMIN' | 'DOCTOR' | 'ENGINEER';
 }
@@ -43,8 +44,11 @@ export interface ServiceLog {
 
 export interface ServiceRequest {
   id: string;
-  asset: Asset;
-  reportedBy: User;
+  asset?: Asset;
+  assetId?: string | number;
+  assetName?: string;
+  reportedBy?: User;
+  reportedByUsername?: string;
   description: string;
   status: 'PENDING' | 'ASSIGNED' | 'COMPLETED';
   createdAt: string;
