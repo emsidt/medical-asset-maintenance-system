@@ -3,6 +3,7 @@ package com.medical.system.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,14 @@ public class ServiceLog {
     @Column(columnDefinition = "TEXT")
     private String additionalLogData;
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal laborHours;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal hourlyRate;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal laborCost;
 
     private LocalDateTime createdAt;
 

@@ -46,9 +46,15 @@ public class SecurityConfig {
                         
                         // Role-based restrictions
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/finance/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/assets/*/department").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/assets/*/report-failure").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/service-requests/*/assign").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/service-requests/*/complete").hasRole("ENGINEER")
                         .requestMatchers("/api/service-requests/**").hasAnyRole("ENGINEER", "ADMIN")
                         .requestMatchers("/api/inventory/**").hasAnyRole("ENGINEER", "ADMIN")
+                        .requestMatchers("/api/departments/**").authenticated()
+                        .requestMatchers("/api/analytics/**").authenticated()
                         
                         // General secured endpoints
                         .requestMatchers("/api/assets/**").authenticated()

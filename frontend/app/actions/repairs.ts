@@ -29,7 +29,12 @@ export async function getServiceRequests(): Promise<ServiceRequest[]> {
   }
 }
 
-export async function completeRepair(requestId: string, resolutionDetails: string, usedParts: { partId: number, quantity: number }[]) {
+export async function completeRepair(
+  requestId: string,
+  resolutionDetails: string,
+  usedParts: { partId: number, quantity: number }[],
+  laborCost?: number
+) {
   const token = cookies().get("token")?.value;
 
   if (!token) {
@@ -43,7 +48,7 @@ export async function completeRepair(requestId: string, resolutionDetails: strin
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ resolutionDetails, usedParts }),
+      body: JSON.stringify({ resolutionDetails, usedParts, laborCost }),
     });
 
     const result: ApiResponse<any> = await response.json();
@@ -57,6 +62,39 @@ export async function completeRepair(requestId: string, resolutionDetails: strin
     return { success: false, message: result.message || "Failed to complete repair" };
   } catch (error) {
     console.error("Complete repair error:", error);
+    return { success: false, message: "Server connection failed" };
+  }
+}
+
+export async function assignRepair(requestId: string, engineerId: string | number) {
+  const token = cookies().get("token")?.value;
+
+  if (!token) {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/service-requests/${requestId}/assign`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ engineerId }),
+    });
+
+    const result: ApiResponse<ServiceRequest> = await response.json();
+
+    if (response.ok) {
+      revalidatePath("/repairs");
+      revalidatePath("/assets");
+      revalidatePath("/analytics");
+      return { success: true };
+    }
+
+    return { success: false, message: result.message || "Failed to assign repair" };
+  } catch (error) {
+    console.error("Assign repair error:", error);
     return { success: false, message: "Server connection failed" };
   }
 }

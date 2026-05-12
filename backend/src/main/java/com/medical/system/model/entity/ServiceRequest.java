@@ -28,6 +28,10 @@ public class ServiceRequest {
     @JoinColumn(name = "reported_by_id", nullable = false)
     private User reportedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_engineer_id")
+    private User assignedEngineer;
+
     @Column(nullable = false)
     private String description;
 

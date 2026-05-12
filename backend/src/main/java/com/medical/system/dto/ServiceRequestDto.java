@@ -12,6 +12,8 @@ public class ServiceRequestDto {
     private Long assetId;
     private String assetName;
     private String reportedByUsername;
+    private Long assignedEngineerId;
+    private String assignedEngineerUsername;
     private String description;
     private RequestStatus status;
     private List<ServiceLogDto> logs;

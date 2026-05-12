@@ -2,12 +2,12 @@ package com.medical.system.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medical.system.dto.AssignEngineerRequest;
 import com.medical.system.dto.CompleteRepairRequest;
 import com.medical.system.dto.ReportFailureRequest;
 import com.medical.system.dto.ServiceRequestDto;
 import com.medical.system.dto.UsedPartDto;
 import com.medical.system.exception.BusinessException;
-import com.medical.system.exception.InsufficientStockException;
 import com.medical.system.exception.ResourceNotFoundException;
 import com.medical.system.mapper.ServiceRequestMapper;
 import com.medical.system.model.entity.*;
@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,38 @@ public class MaintenanceService {
     }
 
     /**
-     * Flow 2 (Engineer): Complete a repair request.
+     * Flow 2 (Admin): Assign a pending repair request to an engineer.
+     */
+    @Transactional
+    public ServiceRequestDto assignEngineer(Long requestId, AssignEngineerRequest request) {
+        ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service request not found with id: " + requestId));
+
+        if (serviceRequest.getStatus() == RequestStatus.COMPLETED) {
+            throw new BusinessException("Completed requests cannot be reassigned");
+        }
+
+        User engineer = userRepository.findById(request.getEngineerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Engineer not found with id: " + request.getEngineerId()));
+
+        if (engineer.getRole() != com.medical.system.model.enums.Role.ENGINEER) {
+            throw new BusinessException("Selected user is not an engineer");
+        }
+
+        serviceRequest.setAssignedEngineer(engineer);
+        serviceRequest.setStatus(RequestStatus.ASSIGNED);
+
+        Asset asset = serviceRequest.getAsset();
+        if (asset != null) {
+            asset.setStatus(AssetStatus.UNDER_MAINTENANCE);
+            assetRepository.save(asset);
+        }
+
+        return serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
+    }
+
+    /**
+     * Flow 3 (Engineer): Complete an assigned repair request.
      */
     @Transactional
     public ServiceRequestDto completeRepair(Long requestId, CompleteRepairRequest request) {
@@ -92,9 +124,18 @@ public class MaintenanceService {
             return serviceRequestMapper.toDto(serviceRequest);
         }
 
+        if (serviceRequest.getStatus() != RequestStatus.ASSIGNED) {
+            throw new BusinessException("Repair request must be assigned to an engineer before completion");
+        }
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User engineer = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (serviceRequest.getAssignedEngineer() != null
+                && !serviceRequest.getAssignedEngineer().getId().equals(engineer.getId())) {
+            throw new BusinessException("Repair request is assigned to another engineer");
+        }
 
         // Create Service Log
         ServiceLog serviceLog = ServiceLog.builder()
@@ -102,6 +143,9 @@ public class MaintenanceService {
                 .engineer(engineer)
                 .resolutionDetails(request.getResolutionDetails())
                 .additionalLogData("{\"status\": \"REPAIRED\", \"completedAt\": \"" + LocalDateTime.now() + "\"}")
+                .laborHours(request.getLaborHours())
+                .hourlyRate(request.getHourlyRate())
+                .laborCost(resolveLaborCost(request))
                 .usedParts(new ArrayList<>())
                 .build();
 
@@ -147,6 +191,16 @@ public class MaintenanceService {
         }
 
         return serviceRequestMapper.toDto(savedRequest);
+    }
+
+    private BigDecimal resolveLaborCost(CompleteRepairRequest request) {
+        if (request.getLaborCost() != null) {
+            return request.getLaborCost();
+        }
+        if (request.getLaborHours() != null && request.getHourlyRate() != null) {
+            return request.getLaborHours().multiply(request.getHourlyRate());
+        }
+        return BigDecimal.ZERO;
     }
 }
 

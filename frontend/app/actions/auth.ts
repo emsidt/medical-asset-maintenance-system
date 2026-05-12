@@ -14,9 +14,18 @@ const API_URL = process.env.API_URL || "http://localhost:8080/api";
       body: JSON.stringify(formData),
     });
 
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const body = await response.text();
+      return {
+        success: false,
+        message: `Backend returned ${response.status}: ${body.slice(0, 120)}`,
+      };
+    }
+
     const result: ApiResponse<AuthResponse> = await response.json();
 
-    if (response.ok && result.data.token) {
+    if (response.ok && result.data?.token) {
       // Store token and user info in cookies
       cookies().set("token", result.data.token, {
         httpOnly: true,

@@ -3,6 +3,8 @@ package com.medical.system.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "inventory")
 @Getter
@@ -20,4 +22,7 @@ public class Inventory {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal unitCost;
 }

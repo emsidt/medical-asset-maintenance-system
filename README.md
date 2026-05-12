@@ -60,6 +60,11 @@ The project uses environment variables for sensitive configurations.
    ```bash
    mvn spring-boot:run
    ```
+   By default the API runs on `http://localhost:8080`. If that port is already used,
+   override it locally:
+   ```bash
+   mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+   ```
 
 ### Frontend Setup
 1. Navigate to the frontend directory:
@@ -74,7 +79,11 @@ The project uses environment variables for sensitive configurations.
    ```bash
    npm run dev
    ```
-   *Note: The frontend will use the `API_URL` defined in your root `.env` file to connect to the backend.*
+   *Note: The frontend uses `API_URL` and `NEXT_PUBLIC_API_URL` when set, otherwise it defaults to `http://localhost:8080/api`. If your backend runs on another port, create `frontend/.env.local` and set both values, for example:*
+   ```env
+   API_URL=http://localhost:8081/api
+   NEXT_PUBLIC_API_URL=http://localhost:8081/api
+   ```
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 
