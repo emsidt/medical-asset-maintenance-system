@@ -14,5 +14,5 @@ public class UserDto {
     private Long id;
     private String username;
     private String password; // Only for creation/update
-    private Role role;
+    private com.medical.system.model.enums.Role role;
 }

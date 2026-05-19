@@ -2,6 +2,7 @@ package com.medical.system.repository;
 
 import com.medical.system.model.entity.Asset;
 import com.medical.system.model.enums.AssetStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface AssetRepository extends JpaRepository<Asset, Long> {
+
+    @Override
+    @EntityGraph(attributePaths = "department")
+    List<Asset> findAll();
 
     /**
      * Tìm thiết bị theo mã (Dùng để seed data hoặc tìm nhanh).

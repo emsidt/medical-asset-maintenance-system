@@ -4,6 +4,7 @@ import com.medical.system.model.enums.AssetStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -33,4 +34,18 @@ public class Asset {
      */
     @Column(name = "next_maintenance_date")
     private LocalDate nextMaintenanceDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal purchasePrice;
+
+    private LocalDate purchaseDate;
+
+    private LocalDate warrantyUntil;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal replacementCost;
 }

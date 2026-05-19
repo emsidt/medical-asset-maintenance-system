@@ -27,10 +27,20 @@ const repairSchema = z.object({
       partId: z.coerce.number().min(1, "Please select a part"),
       quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
     })
-  ),
+  ).default([]),
+  laborCost: z.coerce.number().min(0, "Labor cost cannot be negative").optional(),
 });
 
-type RepairFormValues = z.infer<typeof repairSchema>;
+type UsedPart = {
+  partId: number;
+  quantity: number;
+};
+
+type RepairFormValues = {
+  resolutionDetails: string;
+  usedParts: UsedPart[];
+  laborCost?: number;
+};
 
 interface CompleteRepairModalProps {
   request: ServiceRequest | null;
@@ -54,6 +64,7 @@ export function CompleteRepairModal({ request, isOpen, onClose, inventory }: Com
     defaultValues: {
       resolutionDetails: "",
       usedParts: [],
+      laborCost: 0,
     },
   });
 
@@ -70,7 +81,8 @@ export function CompleteRepairModal({ request, isOpen, onClose, inventory }: Com
       const result = await completeRepair(
         request.id,
         data.resolutionDetails,
-        data.usedParts
+        data.usedParts,
+        data.laborCost
       );
 
       if (result.success) {
@@ -106,6 +118,20 @@ export function CompleteRepairModal({ request, isOpen, onClose, inventory }: Com
             />
             {errors.resolutionDetails && (
               <p className="text-sm text-red-500">{errors.resolutionDetails.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="laborCost">Labor Cost</Label>
+            <Input
+              id="laborCost"
+              type="number"
+              min="0"
+              step="1000"
+              {...register("laborCost")}
+            />
+            {errors.laborCost && (
+              <p className="text-sm text-red-500">{errors.laborCost.message}</p>
             )}
           </div>
 

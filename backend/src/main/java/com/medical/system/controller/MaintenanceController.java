@@ -1,6 +1,7 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
+import com.medical.system.dto.AssignEngineerRequest;
 import com.medical.system.dto.CompleteRepairRequest;
 import com.medical.system.dto.ServiceRequestDto;
 import com.medical.system.service.MaintenanceService;
@@ -77,7 +78,18 @@ public class MaintenanceController {
         return ResponseEntity.ok(ApiResponse.success(null, "Inventory item deleted successfully"));
     }
 
-    @Operation(summary = "Hoàn thành phiếu sửa chữa (Engineer)")
+    @Operation(summary = "Assign repair request to engineer (Admin)")
+    @PatchMapping("/service-requests/{id}/assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<ServiceRequestDto>> assignEngineer(
+            @PathVariable Long id,
+            @jakarta.validation.Valid @RequestBody AssignEngineerRequest request) {
+
+        ServiceRequestDto result = maintenanceService.assignEngineer(id, request);
+        return ResponseEntity.ok(ApiResponse.success(result, "Repair request assigned successfully"));
+    }
+
+    @Operation(summary = "Complete assigned repair request (Engineer)")
     @PostMapping("/service-requests/{id}/complete")
     @PreAuthorize("hasAnyRole('ENGINEER', 'ADMIN')")
     public ResponseEntity<ApiResponse<ServiceRequestDto>> completeRepair(

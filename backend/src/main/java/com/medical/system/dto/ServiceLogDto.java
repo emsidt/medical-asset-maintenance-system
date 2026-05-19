@@ -2,6 +2,7 @@ package com.medical.system.dto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,5 +13,8 @@ public class ServiceLogDto {
     private String resolutionDetails;
     private List<ServiceLogPartDto> usedParts;
     private String additionalLogData;
+    private BigDecimal laborHours;
+    private BigDecimal hourlyRate;
+    private BigDecimal laborCost;
     private LocalDateTime createdAt;
 }

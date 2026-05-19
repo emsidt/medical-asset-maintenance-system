@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -14,4 +15,8 @@ public class CompleteRepairRequest {
 
     @Valid
     private List<UsedPartDto> usedParts;
+
+    private BigDecimal laborHours;
+    private BigDecimal hourlyRate;
+    private BigDecimal laborCost;
 }

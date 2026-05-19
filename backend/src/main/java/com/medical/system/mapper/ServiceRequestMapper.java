@@ -16,6 +16,8 @@ public interface ServiceRequestMapper {
     @Mapping(target = "assetId", source = "asset.id")
     @Mapping(target = "assetName", source = "asset.name")
     @Mapping(target = "reportedByUsername", source = "reportedBy.username")
+    @Mapping(target = "assignedEngineerId", source = "assignedEngineer.id")
+    @Mapping(target = "assignedEngineerUsername", source = "assignedEngineer.username")
     ServiceRequestDto toDto(ServiceRequest entity);
 
     @Mapping(target = "engineerUsername", source = "engineer.username")

@@ -4,8 +4,13 @@ import com.medical.system.dto.ApiResponse;
 import com.medical.system.dto.AssetDto;
 import com.medical.system.dto.ReportFailureRequest;
 import com.medical.system.dto.ServiceRequestDto;
-import com.medical.system.repository.AssetRepository;
 import com.medical.system.service.MaintenanceService;
+import com.medical.system.dto.AssignDepartmentRequest;
+import com.medical.system.exception.ResourceNotFoundException;
+import com.medical.system.model.entity.Asset;
+import com.medical.system.model.entity.Department;
+import com.medical.system.repository.AssetRepository;
+import com.medical.system.repository.DepartmentRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +33,7 @@ public class AssetController {
 
     private final AssetRepository assetRepository;
     private final MaintenanceService maintenanceService;
+    private final DepartmentRepository departmentRepository;
 
     @Operation(summary = "Lấy danh sách tất cả thiết bị (DTO)")
     @GetMapping
@@ -101,6 +107,22 @@ public class AssetController {
                 .status(a.getStatus())
                 .nextMaintenanceDate(a.getNextMaintenanceDate())
                 .build();
+    }
+
+    @Operation(summary = "Assign asset to a department")
+    @PatchMapping("/{id}/department")
+    public ResponseEntity<ApiResponse<Asset>> assignDepartment(
+            @PathVariable Long id,
+            @Valid @RequestBody AssignDepartmentRequest request
+    ) {
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found with id: " + id));
+        Department department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + request.getDepartmentId()));
+
+        asset.setDepartment(department);
+        Asset savedAsset = assetRepository.save(asset);
+        return ResponseEntity.ok(ApiResponse.success(savedAsset, "Asset department assigned successfully"));
     }
 }
 

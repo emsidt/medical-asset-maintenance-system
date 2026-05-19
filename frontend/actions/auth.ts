@@ -15,6 +15,15 @@ export async function login(formData: unknown) {
       body: JSON.stringify(formData),
     });
 
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const body = await response.text();
+      return {
+        success: false,
+        message: `Backend returned ${response.status}: ${body.slice(0, 120)}`,
+      };
+    }
+
     const result: ApiResponse<AuthResponse> = await response.json();
     console.log("Login API result:", result);
 
@@ -42,9 +51,9 @@ export async function login(formData: unknown) {
       return { success: true };
     }
 
-    return { 
-      success: false, 
-      message: result.message || `Login failed with status ${response.status}` 
+    return {
+      success: false,
+      message: result.message || `Login failed with status ${response.status}`
     };
   } catch (error) {
     console.error("Login server action error:", error);
