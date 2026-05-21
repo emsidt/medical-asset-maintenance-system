@@ -24,6 +24,15 @@ const formSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+}).superRefine((data, ctx) => {
+  if (data.priority === "CRITICAL" && data.description.length < 20) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "CRITICAL priority requires detailed reason (>20 characters).",
+      path: ["description"],
+    });
+  }
 });
 
 interface ReportFailureFormProps {
@@ -40,13 +49,14 @@ export function ReportFailureForm({ assetId, assetName, onSuccess }: ReportFailu
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: "",
+      priority: "LOW",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const result = await reportAssetFailure(assetId, values.description);
+      const result = await reportAssetFailure(assetId, values.description, values.priority);
       
       if (result.success) {
         toast.success("Failure reported successfully");
@@ -95,6 +105,19 @@ export function ReportFailureForm({ assetId, assetName, onSuccess }: ReportFailu
             {form.formState.errors.description && (
               <p className="text-xs text-red-500">{form.formState.errors.description.message}</p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <select
+              id="priority"
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              {...form.register("priority")}
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>

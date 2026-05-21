@@ -1,11 +1,11 @@
 package com.medical.system.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.medical.system.dto.AssignEngineerRequest;
-import com.medical.system.dto.CompleteRepairRequest;
-import com.medical.system.dto.ReportFailureRequest;
-import com.medical.system.dto.ServiceRequestDto;
-import com.medical.system.dto.UsedPartDto;
+import com.medical.system.dto.maintenance.AssignEngineerRequest;
+import com.medical.system.dto.maintenance.CompleteRepairRequest;
+import com.medical.system.dto.maintenance.ReportFailureRequest;
+import com.medical.system.dto.maintenance.ServiceRequestDto;
+import com.medical.system.dto.maintenance.UsedPartDto;
 import com.medical.system.exception.BusinessException;
 import com.medical.system.exception.ResourceNotFoundException;
 import com.medical.system.mapper.ServiceRequestMapper;
@@ -60,6 +60,7 @@ public class MaintenanceService {
                 .reportedBy(reporter)
                 .description(request.getDescription())
                 .status(RequestStatus.PENDING)
+                .priority(request.getPriority() != null ? request.getPriority() : com.medical.system.model.enums.RequestPriority.LOW)
                 .build();
 
         return serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
@@ -83,7 +84,7 @@ public class MaintenanceService {
     }
 
     @Transactional
-    public Inventory updateInventory(Long id, com.medical.system.dto.InventoryDto dto) {
+    public Inventory updateInventory(Long id, com.medical.system.dto.inventory.InventoryDto dto) {
         Inventory item = inventoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found"));
 
@@ -239,9 +240,9 @@ public class MaintenanceService {
     }
 
     @Transactional(readOnly = true)
-    public List<com.medical.system.dto.MaintenanceScheduleDto> getAllMaintenanceSchedules() {
+    public List<com.medical.system.dto.maintenance.MaintenanceScheduleDto> getAllMaintenanceSchedules() {
         return ((List<com.medical.system.model.entity.MaintenanceSchedule>) maintenanceScheduleRepository.findAll()).stream()
-                .map(s -> com.medical.system.dto.MaintenanceScheduleDto.builder()
+                .map(s -> com.medical.system.dto.maintenance.MaintenanceScheduleDto.builder()
                         .id(s.getId())
                         .assetId(s.getAsset().getId())
                         .assetName(s.getAsset().getName())

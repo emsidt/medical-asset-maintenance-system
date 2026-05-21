@@ -1,7 +1,7 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.UserDto;
+import com.medical.system.dto.auth.UserDto;
 import com.medical.system.exception.ResourceNotFoundException;
 import com.medical.system.model.entity.User;
 import com.medical.system.repository.UserRepository;

@@ -1,4 +1,4 @@
-package com.medical.system.dto;
+package com.medical.system.dto.maintenance;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

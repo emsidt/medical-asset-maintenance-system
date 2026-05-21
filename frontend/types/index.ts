@@ -66,6 +66,7 @@ export interface ServiceRequest {
   assignedEngineerUsername?: string;
   description: string;
   status: 'PENDING' | 'ASSIGNED' | 'COMPLETED';
+  priority: RequestPriority;
   createdAt: string;
   completedAt?: string;
   logs?: ServiceLog[];
@@ -81,6 +82,8 @@ export interface InventoryItem {
 }
 
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
+
+export type RequestPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface AssetScore {
   assetId: number;

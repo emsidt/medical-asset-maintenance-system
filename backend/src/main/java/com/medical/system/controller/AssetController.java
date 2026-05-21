@@ -1,11 +1,11 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.AssetDto;
-import com.medical.system.dto.ReportFailureRequest;
-import com.medical.system.dto.ServiceRequestDto;
+import com.medical.system.dto.asset.AssetDto;
+import com.medical.system.dto.maintenance.ReportFailureRequest;
+import com.medical.system.dto.maintenance.ServiceRequestDto;
 import com.medical.system.service.MaintenanceService;
-import com.medical.system.dto.AssignDepartmentRequest;
+import com.medical.system.dto.maintenance.AssignDepartmentRequest;
 import com.medical.system.exception.ResourceNotFoundException;
 import com.medical.system.model.entity.Asset;
 import com.medical.system.model.entity.Department;

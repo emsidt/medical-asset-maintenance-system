@@ -1,9 +1,9 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.AssignEngineerRequest;
-import com.medical.system.dto.CompleteRepairRequest;
-import com.medical.system.dto.ServiceRequestDto;
+import com.medical.system.dto.maintenance.AssignEngineerRequest;
+import com.medical.system.dto.maintenance.CompleteRepairRequest;
+import com.medical.system.dto.maintenance.ServiceRequestDto;
 import com.medical.system.service.MaintenanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,7 +47,7 @@ public class MaintenanceController {
     @PostMapping("/inventory")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<com.medical.system.model.entity.Inventory>> createInventory(
-            @RequestBody com.medical.system.dto.InventoryDto dto) {
+            @RequestBody com.medical.system.dto.inventory.InventoryDto dto) {
         com.medical.system.model.entity.Inventory inventory = com.medical.system.model.entity.Inventory.builder()
                 .partName(dto.getPartName())
                 .quantity(dto.getQuantity())
@@ -64,7 +64,7 @@ public class MaintenanceController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<com.medical.system.model.entity.Inventory>> updateInventory(
             @PathVariable Long id,
-            @RequestBody com.medical.system.dto.InventoryDto dto) {
+            @RequestBody com.medical.system.dto.inventory.InventoryDto dto) {
         return ResponseEntity.ok(ApiResponse.success(
                 maintenanceService.updateInventory(id, dto),
                 "Inventory item updated successfully"));
@@ -111,7 +111,7 @@ public class MaintenanceController {
     @Operation(summary = "Lấy danh sách lịch bảo trì (Admin/Manager)")
     @GetMapping("/maintenance-schedules")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ENGINEER')")
-    public ResponseEntity<ApiResponse<List<com.medical.system.dto.MaintenanceScheduleDto>>> getMaintenanceSchedules() {
+    public ResponseEntity<ApiResponse<List<com.medical.system.dto.maintenance.MaintenanceScheduleDto>>> getMaintenanceSchedules() {
         return ResponseEntity.ok(ApiResponse.success(
                 maintenanceService.getAllMaintenanceSchedules(),
                 "Maintenance schedules retrieved successfully"));

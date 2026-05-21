@@ -1,4 +1,4 @@
-package com.medical.system.dto;
+package com.medical.system.dto.dashboard;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.medical.system.service;
 
-import com.medical.system.dto.AssetScoreDto;
-import com.medical.system.dto.DepartmentScoreDto;
+import com.medical.system.dto.asset.AssetScoreDto;
+import com.medical.system.dto.dashboard.DepartmentScoreDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;

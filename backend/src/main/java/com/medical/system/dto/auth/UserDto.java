@@ -1,4 +1,4 @@
-package com.medical.system.dto;
+package com.medical.system.dto.auth;
 
 import com.medical.system.model.enums.Role;
 import lombok.AllArgsConstructor;
