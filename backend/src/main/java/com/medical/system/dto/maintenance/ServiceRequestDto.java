@@ -1,5 +1,6 @@
-package com.medical.system.dto;
+package com.medical.system.dto.maintenance;
 
+import com.medical.system.model.enums.RequestPriority;
 import com.medical.system.model.enums.RequestStatus;
 import lombok.Data;
 
@@ -16,6 +17,7 @@ public class ServiceRequestDto {
     private String assignedEngineerUsername;
     private String description;
     private RequestStatus status;
+    private RequestPriority priority;
     private List<ServiceLogDto> logs;
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;

@@ -1,8 +1,8 @@
 package com.medical.system.service;
 
-import com.medical.system.dto.AssetStatisticsDto;
-import com.medical.system.dto.DashboardStatsDto;
-import com.medical.system.dto.LowStockAlertDto;
+import com.medical.system.dto.asset.AssetStatisticsDto;
+import com.medical.system.dto.dashboard.DashboardStatsDto;
+import com.medical.system.dto.inventory.LowStockAlertDto;
 import com.medical.system.model.entity.Asset;
 import com.medical.system.model.entity.MaintenanceSchedule;
 import com.medical.system.model.entity.ServiceRequest;

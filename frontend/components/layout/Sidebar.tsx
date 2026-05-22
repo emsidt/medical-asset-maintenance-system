@@ -21,7 +21,7 @@ export function Sidebar({ userRole }: SidebarProps) {
     { name: 'Analytics', href: '/dashboard', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Assets & Reporting', href: '/assets', icon: Package, roles: ['ADMIN', 'DOCTOR', 'NURSE'] },
     { name: 'Repair Requests', href: '/repairs', icon: ClipboardList, roles: ['ADMIN', 'ENGINEER'] },
-    { name: 'Inventory View', href: '/management/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'ENGINEER'] },
+    { name: 'Inventory View', href: '/management/inventory', icon: Package, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Asset Management', href: '/management/assets', icon: Settings, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Staff Management', href: '/management/staff', icon: User, roles: ['ADMIN'] },
     { name: 'Inventory', href: '/inventory', icon: Boxes, roles: ['ADMIN', 'ENGINEER'] },

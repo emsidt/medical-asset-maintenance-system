@@ -45,7 +45,11 @@ export function RepairsView({ initialRequests, inventory }: RepairsViewProps) {
     setIsModalOpen(true);
   };
 
-  const activeRequests = initialRequests.filter(r => r.status !== "COMPLETED");
+  const priorityOrder: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+  
+  const activeRequests = initialRequests
+    .filter(r => r.status !== "COMPLETED")
+    .sort((a, b) => priorityOrder[a.priority || 'LOW'] - priorityOrder[b.priority || 'LOW']);
   const completedRequests = initialRequests.filter(r => r.status === "COMPLETED");
 
   return (
@@ -70,6 +74,7 @@ export function RepairsView({ initialRequests, inventory }: RepairsViewProps) {
               <TableHead>Asset Name</TableHead>
               <TableHead>Reported By</TableHead>
               <TableHead>Issue Description</TableHead>
+              <TableHead>Priority</TableHead>
               <TableHead>Date Reported</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
@@ -89,6 +94,13 @@ export function RepairsView({ initialRequests, inventory }: RepairsViewProps) {
                   <TableCell>{req.reportedByUsername}</TableCell>
                   <TableCell className="max-w-xs truncate" title={req.description}>
                     {req.description}
+                  </TableCell>
+                  <TableCell>
+                    {req.priority === 'CRITICAL' ? (
+                      <Badge variant="destructive" className="animate-pulse">CRITICAL</Badge>
+                    ) : (
+                      <Badge variant="outline">{req.priority || 'LOW'}</Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     {req.createdAt ? formatDate(req.createdAt) : 'N/A'}

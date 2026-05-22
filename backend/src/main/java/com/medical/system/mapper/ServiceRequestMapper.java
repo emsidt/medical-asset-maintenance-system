@@ -1,8 +1,8 @@
 package com.medical.system.mapper;
 
-import com.medical.system.dto.ServiceLogDto;
-import com.medical.system.dto.ServiceLogPartDto;
-import com.medical.system.dto.ServiceRequestDto;
+import com.medical.system.dto.maintenance.ServiceLogDto;
+import com.medical.system.dto.maintenance.ServiceLogPartDto;
+import com.medical.system.dto.maintenance.ServiceRequestDto;
 import com.medical.system.model.entity.ServiceLog;
 import com.medical.system.model.entity.ServiceLogPart;
 import com.medical.system.model.entity.ServiceRequest;

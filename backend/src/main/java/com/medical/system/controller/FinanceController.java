@@ -1,11 +1,11 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.AssetFinancialDto;
-import com.medical.system.dto.DepartmentFinancialDto;
-import com.medical.system.dto.FinancialSummaryDto;
-import com.medical.system.dto.UpdateAssetFinancialRequest;
-import com.medical.system.dto.UpdateInventoryFinancialRequest;
+import com.medical.system.dto.asset.AssetFinancialDto;
+import com.medical.system.dto.dashboard.DepartmentFinancialDto;
+import com.medical.system.dto.dashboard.FinancialSummaryDto;
+import com.medical.system.dto.asset.UpdateAssetFinancialRequest;
+import com.medical.system.dto.inventory.UpdateInventoryFinancialRequest;
 import com.medical.system.model.entity.Asset;
 import com.medical.system.model.entity.Inventory;
 import com.medical.system.service.FinanceService;

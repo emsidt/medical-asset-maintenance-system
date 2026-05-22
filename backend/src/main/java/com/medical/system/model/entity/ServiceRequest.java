@@ -1,5 +1,6 @@
 package com.medical.system.model.entity;
 
+import com.medical.system.model.enums.RequestPriority;
 import com.medical.system.model.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,6 +39,11 @@ public class ServiceRequest {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private RequestPriority priority = RequestPriority.LOW;
 
     @OneToMany(mappedBy = "serviceRequest", cascade = CascadeType.ALL)
     @Builder.Default

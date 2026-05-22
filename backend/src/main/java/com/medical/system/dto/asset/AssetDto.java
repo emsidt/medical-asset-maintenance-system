@@ -1,4 +1,4 @@
-package com.medical.system.dto;
+package com.medical.system.dto.asset;
 
 import com.medical.system.model.enums.AssetStatus;
 import lombok.AllArgsConstructor;

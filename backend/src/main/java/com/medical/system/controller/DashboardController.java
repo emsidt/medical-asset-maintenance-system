@@ -1,8 +1,8 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.AssetDto;
-import com.medical.system.dto.DashboardStatsDto;
+import com.medical.system.dto.asset.AssetDto;
+import com.medical.system.dto.dashboard.DashboardStatsDto;
 import com.medical.system.model.enums.AssetStatus;
 import com.medical.system.repository.AssetRepository;
 import com.medical.system.service.MaintenanceSchedulerService;

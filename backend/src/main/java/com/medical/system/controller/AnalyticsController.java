@@ -1,8 +1,8 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.AssetScoreDto;
-import com.medical.system.dto.DepartmentScoreDto;
+import com.medical.system.dto.asset.AssetScoreDto;
+import com.medical.system.dto.dashboard.DepartmentScoreDto;
 import com.medical.system.service.AnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

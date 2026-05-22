@@ -1,5 +1,7 @@
-package com.medical.system.dto;
+package com.medical.system.dto.dashboard;
 
+import com.medical.system.dto.asset.AssetStatisticsDto;
+import com.medical.system.dto.inventory.LowStockAlertDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

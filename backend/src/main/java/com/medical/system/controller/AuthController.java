@@ -1,8 +1,8 @@
 package com.medical.system.controller;
 
 import com.medical.system.dto.ApiResponse;
-import com.medical.system.dto.LoginRequest;
-import com.medical.system.dto.LoginResponse;
+import com.medical.system.dto.auth.LoginRequest;
+import com.medical.system.dto.auth.LoginResponse;
 import com.medical.system.model.entity.User;
 import com.medical.system.repository.UserRepository;
 import com.medical.system.security.JwtService;

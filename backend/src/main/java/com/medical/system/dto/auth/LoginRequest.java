@@ -1,4 +1,4 @@
-package com.medical.system.dto;
+package com.medical.system.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
