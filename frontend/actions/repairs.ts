@@ -1,48 +1,42 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { getAuthHeaders } from "@/lib/server-auth";
 import { ApiResponse, ServiceRequest, InventoryItem } from "@/types";
 import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.API_URL || "http://localhost:8080/api";
 
-
 export async function getServiceRequests(): Promise<ServiceRequest[]> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}/service-requests`, {
-      headers: {
-
-        "Authorization": `Bearer ${token}`
-      },
-      next: { revalidate: 0 }
+      headers: { ...authHeaders },
+      next: { revalidate: 0 },
     });
 
     if (!response.ok) {
       console.error(`Failed to fetch service requests: ${response.status} ${response.statusText}`);
       throw new Error(`Failed to fetch service requests (Status: ${response.status})`);
     }
-    
+
     const result: ApiResponse<ServiceRequest[]> = await response.json();
     return result.data;
   } catch (error) {
     console.error("Could not fetch service requests from backend:", error);
-    // Mock data if backend endpoint doesn't exist yet
     return [];
   }
-
 }
 
 export async function completeRepair(
   requestId: string | number,
   resolutionDetails: string,
-  usedParts: { partId: number, quantity: number }[],
+  usedParts: { partId: number; quantity: number }[],
   laborCost?: number
 ) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
-  if (!token) {
+  if (!authHeaders.Authorization) {
     return { success: false, message: "Unauthorized" };
   }
 
@@ -51,7 +45,7 @@ export async function completeRepair(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        ...authHeaders,
       },
       body: JSON.stringify({ resolutionDetails, usedParts, laborCost }),
     });
@@ -75,9 +69,9 @@ export async function completeRepair(
 }
 
 export async function assignRepair(requestId: string, engineerId: string | number) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
-  if (!token) {
+  if (!authHeaders.Authorization) {
     return { success: false, message: "Unauthorized" };
   }
 
@@ -86,7 +80,7 @@ export async function assignRepair(requestId: string, engineerId: string | numbe
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        ...authHeaders,
       },
       body: JSON.stringify({ engineerId }),
     });
@@ -108,40 +102,35 @@ export async function assignRepair(requestId: string, engineerId: string | numbe
 }
 
 export async function getInventory(): Promise<InventoryItem[]> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}/inventory`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
-      next: { revalidate: 0 }
+      headers: { ...authHeaders },
+      next: { revalidate: 0 },
     });
 
     if (!response.ok) throw new Error("Failed to fetch inventory");
-    
+
     const result: ApiResponse<InventoryItem[]> = await response.json();
     return result.data;
   } catch (error) {
     console.warn("Could not fetch inventory from backend, using fallback mock data", error);
     return [];
-
   }
 }
 
 export async function getMaintenanceSchedules(): Promise<import("@/types").MaintenanceSchedule[]> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}/maintenance-schedules`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
-      next: { revalidate: 0 }
+      headers: { ...authHeaders },
+      next: { revalidate: 0 },
     });
 
     if (!response.ok) throw new Error("Failed to fetch maintenance schedules");
-    
+
     const result: ApiResponse<import("@/types").MaintenanceSchedule[]> = await response.json();
     return result.data;
   } catch (error) {
@@ -151,18 +140,16 @@ export async function getMaintenanceSchedules(): Promise<import("@/types").Maint
 }
 
 export async function startMaintenance(requestId: string | number) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}/service-requests/${requestId}/start`, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
+      headers: { ...authHeaders },
     });
 
     if (!response.ok) return { success: false, message: "Failed to start maintenance" };
-    
+
     revalidatePath("/repairs");
     revalidatePath("/assets");
     revalidatePath("/dashboard");

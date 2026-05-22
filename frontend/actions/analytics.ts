@@ -1,18 +1,16 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { getAuthHeaders } from "@/lib/server-auth";
 import { ApiResponse, AssetScore, DepartmentScore } from "@/types";
 
 const API_URL = process.env.API_URL || "http://localhost:8080/api";
 
 async function fetchAnalytics<T>(path: string): Promise<T[]> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}${path}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { ...authHeaders },
       next: { revalidate: 0 },
     });
 

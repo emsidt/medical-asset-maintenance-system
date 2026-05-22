@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { getAuthHeaders } from "@/lib/server-auth";
 import { ApiResponse, DashboardStats } from "@/types";
 
 const API_URL = process.env.API_URL || "http://localhost:8080/api";
@@ -10,13 +10,11 @@ const API_URL = process.env.API_URL || "http://localhost:8080/api";
  * Gọi GET /api/dashboard/stats
  */
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}/dashboard/stats`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { ...authHeaders },
       next: { revalidate: 0 }, // Luôn lấy dữ liệu mới nhất
     });
 

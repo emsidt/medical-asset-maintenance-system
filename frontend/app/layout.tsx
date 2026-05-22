@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { cookies } from "next/headers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -24,30 +23,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
-  const userCookie = cookieStore.get("user")?.value;
 
-  let user = null;
+  const user = session?.user
+    ? {
+        username: session.user.name || session.user.email || undefined,
+        role: (session.user as { role: 'ADMIN' | 'DOCTOR' | 'ENGINEER' }).role,
+      }
+    : null;
 
-  // Priority 1: NextAuth Session
-  if (session?.user) {
-    user = {
-      username: session.user.name || session.user.email,
-      role: (session.user as { role: string }).role,
-    };
-  }
-  // Priority 2: Legacy Cookies
-  else if (userCookie) {
-    try {
-      user = JSON.parse(userCookie);
-    } catch {
-      console.error("Failed to parse user cookie");
-    }
-  }
-
-  // If there's no token (NextAuth or Cookie), we assume unauthorized state
-  const showShell = !!session || !!token;
+  const showShell = !!session;
 
   return (
     <html lang="vi">

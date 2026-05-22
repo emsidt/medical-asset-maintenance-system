@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { getAuthHeaders } from "@/lib/server-auth";
 import {
   ApiResponse,
   Asset,
@@ -14,13 +14,11 @@ import { revalidatePath } from "next/cache";
 const API_URL = process.env.API_URL || "http://localhost:8080/api";
 
 async function fetchFinance<T>(path: string): Promise<T | null> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
   try {
     const response = await fetch(`${API_URL}${path}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { ...authHeaders },
       next: { revalidate: 0 },
     });
 
@@ -57,9 +55,9 @@ export async function updateAssetFinancials(
     warrantyUntil?: string;
   }
 ) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
-  if (!token) {
+  if (!authHeaders.Authorization) {
     return { success: false, message: "Unauthorized" };
   }
 
@@ -68,7 +66,7 @@ export async function updateAssetFinancials(
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...authHeaders,
       },
       body: JSON.stringify(payload),
     });
@@ -92,9 +90,9 @@ export async function updateInventoryFinancials(
   inventoryId: string | number,
   payload: { unitCost?: number }
 ) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
 
-  if (!token) {
+  if (!authHeaders.Authorization) {
     return { success: false, message: "Unauthorized" };
   }
 
@@ -103,7 +101,7 @@ export async function updateInventoryFinancials(
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...authHeaders,
       },
       body: JSON.stringify(payload),
     });

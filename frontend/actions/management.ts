@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { getAuthHeaders } from "@/lib/server-auth";
 import { ApiResponse, InventoryItem, User } from "@/types";
 import { revalidatePath } from "next/cache";
 
@@ -9,11 +9,11 @@ const API_URL = process.env.API_URL || "http://localhost:8080/api";
 // --- Staff Management ---
 
 export async function getStaff(): Promise<User[]> {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/staff`, {
-      headers: { "Authorization": `Bearer ${token}` },
-      next: { revalidate: 0 }
+      headers: { ...authHeaders },
+      next: { revalidate: 0 },
     });
     if (!response.ok) throw new Error("Failed to fetch staff");
     const result: ApiResponse<User[]> = await response.json();
@@ -25,13 +25,13 @@ export async function getStaff(): Promise<User[]> {
 }
 
 export async function createStaff(staff: Partial<User> & { password?: string }) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/staff`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        ...authHeaders,
       },
       body: JSON.stringify(staff),
     });
@@ -45,11 +45,11 @@ export async function createStaff(staff: Partial<User> & { password?: string }) 
 }
 
 export async function deleteStaff(id: number) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/staff/${id}`, {
       method: "DELETE",
-      headers: { "Authorization": `Bearer ${token}` },
+      headers: { ...authHeaders },
     });
     if (!response.ok) throw new Error("Failed to delete staff");
     revalidatePath("/management/staff");
@@ -61,13 +61,13 @@ export async function deleteStaff(id: number) {
 }
 
 export async function updateStaff(id: number, staff: Partial<User> & { password?: string }) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/staff/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        ...authHeaders,
       },
       body: JSON.stringify(staff),
     });
@@ -80,17 +80,16 @@ export async function updateStaff(id: number, staff: Partial<User> & { password?
   }
 }
 
-
 // --- Inventory Management ---
 
 export async function createInventoryItem(item: Partial<InventoryItem>) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/inventory`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        ...authHeaders,
       },
       body: JSON.stringify(item),
     });
@@ -104,11 +103,11 @@ export async function createInventoryItem(item: Partial<InventoryItem>) {
 }
 
 export async function deleteInventoryItem(id: number) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/inventory/${id}`, {
       method: "DELETE",
-      headers: { "Authorization": `Bearer ${token}` },
+      headers: { ...authHeaders },
     });
     if (!response.ok) throw new Error("Failed to delete inventory item");
     revalidatePath("/repairs");
@@ -121,13 +120,13 @@ export async function deleteInventoryItem(id: number) {
 }
 
 export async function updateInventoryItem(id: number, item: Partial<InventoryItem>) {
-  const token = cookies().get("token")?.value;
+  const authHeaders = await getAuthHeaders();
   try {
     const response = await fetch(`${API_URL}/inventory/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        ...authHeaders,
       },
       body: JSON.stringify(item),
     });
@@ -140,4 +139,3 @@ export async function updateInventoryItem(id: number, item: Partial<InventoryIte
     return { success: false, message: "Error updating inventory item" };
   }
 }
-

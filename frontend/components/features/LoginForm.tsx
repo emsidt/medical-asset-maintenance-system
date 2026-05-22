@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { login } from "@/actions/auth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,29 +49,21 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    
-    // 1. Login with NextAuth to manage session
-    const nextAuthResult = await signIn("credentials", {
+
+    const result = await signIn("credentials", {
       ...data,
       redirect: false,
     });
 
-    if (nextAuthResult?.error) {
+    if (result?.error) {
       toast.error("Tên đăng nhập hoặc mật khẩu không chính xác.");
       setIsLoading(false);
       return;
     }
 
-    // 2. Sync cookie for Server Actions calling Backend
-    const cookieResult = await login(data);
-
-    if (cookieResult.success) {
-      toast.success("Đăng nhập thành công!");
-      router.push("/");
-      router.refresh();
-    } else {
-      toast.error(cookieResult.message || "Không thể đồng bộ session cookies");
-    }
+    toast.success("Đăng nhập thành công!");
+    router.push("/");
+    router.refresh();
     setIsLoading(false);
   };
 
