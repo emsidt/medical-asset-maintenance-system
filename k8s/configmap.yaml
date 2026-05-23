@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: medical-system
+data:
+  # Backend Configurations
+  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-service:3306/medical_system?createDatabaseIfNotExist=true"
+  SPRING_DATASOURCE_USERNAME: "root"
+  
+  # Frontend Configurations
+  # API_URL is used by Next.js Server Components to fetch data internally inside the cluster
+  API_URL: "http://backend-service:8080/api"
+  
+  # NEXT_PUBLIC_API_URL is used by the browser to fetch data.
+  # Routing it through /api lets Ingress handle routing to the backend service.
+  NEXT_PUBLIC_API_URL: "/api"
+  
+  # NEXTAUTH_URL is the canonical URL of the site, required for NextAuth in production
+  NEXTAUTH_URL: "http://medical.local"
