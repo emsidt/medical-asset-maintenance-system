@@ -186,3 +186,12 @@ export interface MaintenanceSchedule {
   scheduledDate: string;
   notes: string;
 }
+
+export interface NotificationDto {
+  id: number;
+  recipientId: number;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}

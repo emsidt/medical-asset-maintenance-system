@@ -9,6 +9,7 @@ import com.medical.system.model.entity.ServiceRequest;
 import com.medical.system.model.entity.User;
 import com.medical.system.model.enums.AssetStatus;
 import com.medical.system.model.enums.RequestStatus;
+import com.medical.system.model.enums.Role;
 import com.medical.system.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class MaintenanceSchedulerService {
     private final UserRepository userRepository;
     private final com.medical.system.mapper.ServiceRequestMapper serviceRequestMapper;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private final NotificationService notificationService;
 
     /**
      * Cron Job chạy lúc 00:00 mỗi ngày.
@@ -74,11 +76,13 @@ public class MaintenanceSchedulerService {
                     .reportedBy(admin)
                     .build();
             ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
-            try {
-                com.medical.system.dto.maintenance.ServiceRequestDto dto = serviceRequestMapper.toDto(savedRequest);
-                com.medical.system.config.WebSocketNotificationHandler.broadcast(objectMapper.writeValueAsString(dto));
-            } catch (Exception e) {
-                log.error("Failed to broadcast maintenance service request via WebSocket", e);
+            List<User> adminsAndManagers = userRepository.findByRoleIn(List.of(Role.ADMIN));
+            for (User manager : adminsAndManagers) {
+                notificationService.sendNotification(
+                    manager,
+                    "Lịch bảo trì định kỳ mới",
+                    "Hệ thống vừa tự động tạo yêu cầu bảo trì cho thiết bị: " + asset.getName()
+                );
             }
 
             // Cập nhật trạng thái sang MAINTENANCE_DUE để thông báo

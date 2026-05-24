@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ServiceRequest, InventoryItem, User } from "@/types";
 import { assignRepair, getServiceRequests, getInventory, startMaintenance } from "@/actions/repairs";
 import { getUsers } from "@/actions/users";
 import { CompleteRepairModal } from "@/components/features/CompleteRepairModal";
 import { AssignEngineerModal } from "@/components/features/AssignEngineerModal";
 import { useSocket } from "@/components/providers/socket-provider";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -25,7 +26,17 @@ export default function RepairsPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [engineers, setEngineers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { data: session } = useSession();
+  
+  // Create a compatible user object for the existing logic
+  const currentUser = useMemo(() => {
+    return session?.user ? {
+      id: session.user.name, // The backend stores username in 'name' or 'id'
+      username: session.user.name,
+      role: (session.user as { role?: string }).role,
+    } : null;
+  }, [session]);
+
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,14 +46,7 @@ export default function RepairsPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const userCookie = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("user="))
-          ?.split("=")[1];
-        const loggedUser = userCookie ? JSON.parse(decodeURIComponent(userCookie)) : null;
-        setCurrentUser(loggedUser);
-
-        const shouldLoadUsers = loggedUser?.role === "ADMIN";
+        const shouldLoadUsers = currentUser?.role === "ADMIN";
         const [reqs, inv, users] = await Promise.all([
           getServiceRequests(),
           getInventory(),
@@ -57,8 +61,11 @@ export default function RepairsPage() {
         setLoading(false);
       }
     }
-    loadData();
-  }, [isModalOpen, isAssignModalOpen]); // Load lại khi modal đóng để cập nhật dữ liệu mới nhất
+    
+    if (currentUser) {
+      loadData();
+    }
+  }, [currentUser]); // Initial load only, WebSocket handles real-time updates
 
   const { subscribe } = useSocket();
 
@@ -81,9 +88,7 @@ export default function RepairsPage() {
     const result = await startMaintenance(id);
     if (result.success) {
       toast.success("Đã tiếp nhận yêu cầu sửa chữa. Trạng thái thiết bị được cập nhật thành Đang bảo trì.");
-      const [reqs, inv] = await Promise.all([getServiceRequests(), getInventory()]);
-      setRequests(reqs);
-      setInventory(inv);
+      // Danh sách ServiceRequest sẽ tự động cập nhật qua WebSocket
     } else {
       toast.error(result.message || "Lỗi tiếp nhận yêu cầu sửa chữa.");
     }
@@ -100,9 +105,7 @@ export default function RepairsPage() {
   };
 
   const handleAssignSuccess = async () => {
-    const [reqs, inv] = await Promise.all([getServiceRequests(), getInventory()]);
-    setRequests(reqs);
-    setInventory(inv);
+    // Không cần gọi API, WebSocket sẽ tự update ServiceRequest.
   };
 
   const renderStatusBadge = (status: ServiceRequest['status']) => {
