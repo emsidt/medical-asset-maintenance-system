@@ -12,11 +12,14 @@ import com.medical.system.mapper.ServiceRequestMapper;
 import com.medical.system.model.entity.*;
 import com.medical.system.model.enums.AssetStatus;
 import com.medical.system.model.enums.RequestStatus;
+import com.medical.system.model.enums.Role;
 import com.medical.system.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -35,6 +38,8 @@ public class MaintenanceService {
     private final MaintenanceScheduleRepository maintenanceScheduleRepository;
     private final ServiceRequestMapper serviceRequestMapper;
     private final ObjectMapper objectMapper;
+    private final NotificationService notificationService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * Flow 1 (Doctor): Report a failure for an asset.
@@ -64,11 +69,18 @@ public class MaintenanceService {
                 .build();
 
         ServiceRequestDto dto = serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
-        try {
-            com.medical.system.config.WebSocketNotificationHandler.broadcast(objectMapper.writeValueAsString(dto));
-        } catch (Exception e) {
-            // log error or ignore to prevent breaking flow
+        
+        List<User> adminsAndManagers = userRepository.findByRoleIn(List.of(Role.ADMIN));
+        for (User manager : adminsAndManagers) {
+            notificationService.sendNotification(
+                manager, 
+                "Báo hỏng thiết bị mới", 
+                "Bác sĩ " + reporter.getUsername() + " vừa báo hỏng thiết bị " + asset.getName()
+            );
         }
+
+        messagingTemplate.convertAndSend("/topic/service-requests", dto);
+
         return dto;
     }
 
@@ -136,11 +148,7 @@ public class MaintenanceService {
         }
 
         ServiceRequestDto result = serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
-        try {
-            com.medical.system.config.WebSocketNotificationHandler.broadcast(objectMapper.writeValueAsString(result));
-        } catch (Exception e) {
-            // log or ignore
-        }
+        messagingTemplate.convertAndSend("/topic/service-requests", result);
         return result;
     }
 
@@ -172,11 +180,15 @@ public class MaintenanceService {
         }
 
         ServiceRequestDto result = serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
-        try {
-            com.medical.system.config.WebSocketNotificationHandler.broadcast(objectMapper.writeValueAsString(result));
-        } catch (Exception e) {
-            // log or ignore
-        }
+        
+        notificationService.sendNotification(
+            engineer,
+            "Nhiệm vụ mới",
+            "Bạn vừa được phân công sửa chữa thiết bị: " + asset.getName()
+        );
+
+        messagingTemplate.convertAndSend("/topic/service-requests", result);
+
         return result;
     }
 
@@ -267,11 +279,17 @@ public class MaintenanceService {
         }
 
         ServiceRequestDto dto = serviceRequestMapper.toDto(savedRequest);
-        try {
-            com.medical.system.config.WebSocketNotificationHandler.broadcast(objectMapper.writeValueAsString(dto));
-        } catch (Exception e) {
-            // log or ignore
+        
+        if (serviceRequest.getReportedBy() != null) {
+            notificationService.sendNotification(
+                serviceRequest.getReportedBy(),
+                "Thiết bị đã được sửa xong",
+                "Thiết bị " + asset.getName() + " bạn báo hỏng đã được sửa xong bởi kỹ sư " + engineer.getUsername()
+            );
         }
+
+        messagingTemplate.convertAndSend("/topic/service-requests", dto);
+
         return dto;
     }
 

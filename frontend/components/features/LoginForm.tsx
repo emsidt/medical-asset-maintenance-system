@@ -63,8 +63,6 @@ export function LoginForm() {
 
     toast.success("Đăng nhập thành công!");
     router.push("/");
-    router.refresh();
-    setIsLoading(false);
   };
 
   return (

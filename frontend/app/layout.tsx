@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { SocketProvider } from "@/components/providers/socket-provider";
@@ -31,28 +29,14 @@ export default async function RootLayout({
       }
     : null;
 
-  const showShell = !!session;
-
   return (
     <html lang="vi">
       <body className={cn(inter.className, "bg-gray-50 min-h-screen")}>
         <AuthProvider>
-          {showShell ? (
-            <SocketProvider userRole={user?.role}>
-              <div className="flex h-screen overflow-hidden">
-                <Sidebar userRole={user?.role} />
-                <div className="flex flex-1 flex-col overflow-hidden">
-                  <Header userName={user?.username} userRole={user?.role} />
-                  <main className="flex-1 overflow-y-auto p-8">
-                    {children}
-                  </main>
-                </div>
-              </div>
-            </SocketProvider>
-          ) : (
-            <main>{children}</main>
-          )}
-          <Toaster position="top-right" richColors />
+          <SocketProvider userRole={user?.role}>
+            {children}
+            <Toaster position="top-right" richColors duration={5000} closeButton />
+          </SocketProvider>
         </AuthProvider>
       </body>
     </html>

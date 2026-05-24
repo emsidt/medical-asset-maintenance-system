@@ -2,7 +2,10 @@
 
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { ServiceRequest } from "@/types";
+import { ServiceRequest, NotificationDto } from "@/types";
+import { useSession } from "next-auth/react";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 interface SocketContextType {
   subscribe: <T>(event: string, callback: (data: T) => void) => () => void;
@@ -25,6 +28,7 @@ interface SocketProviderProps {
 
 export const SocketProvider = ({ children, userRole }: SocketProviderProps) => {
   const listenersRef = useRef<{ [event: string]: ((data: never) => void)[] }>({});
+  const { data: session } = useSession();
 
   const subscribe = <T,>(event: string, callback: (data: T) => void) => {
     if (!listenersRef.current[event]) {
@@ -39,24 +43,50 @@ export const SocketProvider = ({ children, userRole }: SocketProviderProps) => {
   };
 
   useEffect(() => {
-    if (!userRole) {
+    // Need valid session token to connect to STOMP
+    const token = (session?.user as { accessToken?: string })?.accessToken;
+    if (!userRole || !token) {
       return;
     }
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/ws/notifications";
-    let socket: WebSocket | null = null;
-    let reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
+    // Backend endpoint for SockJS is /ws
+    // process.env.NEXT_PUBLIC_WS_URL should be "http://localhost:8080/ws"
+    const brokerUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
+    
+    const client = new Client({
+      webSocketFactory: () => new SockJS(brokerUrl),
+      connectHeaders: {
+        Authorization: `Bearer ${token}`
+      },
+      debug: function () {
+        // console.log("STOMP: " + str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
 
-    function connect() {
-      socket = new WebSocket(wsUrl);
+    client.onConnect = () => {
+      console.log("STOMP connected!");
 
-      socket.onopen = () => {
-        console.log("WebSocket connected to notifications");
-      };
-
-      socket.onmessage = (event) => {
+      // 1. Subscribe to personal notifications
+      client.subscribe("/user/queue/notifications", (message) => {
         try {
-          const request = JSON.parse(event.data) as ServiceRequest;
+          const notification = JSON.parse(message.body) as NotificationDto;
+          // Trigger the local listeners if any
+          const eventListeners = listenersRef.current["new-notification"];
+          if (eventListeners) {
+            eventListeners.forEach((cb) => cb(notification as never));
+          }
+        } catch (err) {
+          console.error("Failed to parse notification message", err);
+        }
+      });
+
+      // 2. Subscribe to global service requests
+      client.subscribe("/topic/service-requests", (message) => {
+        try {
+          const request = JSON.parse(message.body) as ServiceRequest;
           
           if (localStorage.getItem("alert_asset_failure") !== "false") {
             const assetName = request.assetName || request.asset?.name || "Thiết bị";
@@ -96,37 +126,30 @@ export const SocketProvider = ({ children, userRole }: SocketProviderProps) => {
             }
           }
 
-          // Trigger listeners
+          // Trigger listeners for the table update
           const eventListeners = listenersRef.current["new-repair-request"];
           if (eventListeners) {
             eventListeners.forEach((cb) => cb(request as never));
           }
         } catch (err) {
-          console.error("Failed to parse WebSocket message", err);
+          console.error("Failed to parse ServiceRequest message", err);
         }
-      };
+      });
+    };
 
-      socket.onclose = () => {
-        console.log("WebSocket connection closed, reconnecting in 5s...");
-        reconnectTimeout = setTimeout(connect, 5000);
-      };
+    client.onStompError = (frame) => {
+      console.error("Broker reported error: " + frame.headers["message"]);
+      console.error("Additional details: " + frame.body);
+    };
 
-      socket.onerror = (err) => {
-        console.error("WebSocket error:", err);
-        socket?.close();
-      };
-    }
-
-    connect();
+    client.activate();
 
     return () => {
-      if (socket) {
-        socket.onclose = null;
-        socket.close();
+      if (client.active) {
+        client.deactivate();
       }
-      clearTimeout(reconnectTimeout);
     };
-  }, [userRole]);
+  }, [userRole, session]);
 
   return (
     <SocketContext.Provider value={{ subscribe }}>
