@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
 
                         // Staff Management: chỉ ADMIN
                         .requestMatchers("/api/staff/**").hasRole("ADMIN")

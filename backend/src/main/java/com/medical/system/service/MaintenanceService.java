@@ -70,13 +70,15 @@ public class MaintenanceService {
 
         ServiceRequestDto dto = serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
         
-        List<User> adminsAndManagers = userRepository.findByRoleIn(List.of(Role.ADMIN));
+        List<User> adminsAndManagers = userRepository.findByRoleIn(List.of(Role.ADMIN, Role.ENGINEER));
         for (User manager : adminsAndManagers) {
-            notificationService.sendNotification(
-                manager, 
-                "Báo hỏng thiết bị mới", 
-                "Bác sĩ " + reporter.getUsername() + " vừa báo hỏng thiết bị " + asset.getName()
-            );
+            if (!manager.getId().equals(reporter.getId())) {
+                notificationService.sendNotification(
+                    manager, 
+                    "Báo hỏng thiết bị mới", 
+                    "Người dùng " + reporter.getUsername() + " vừa báo hỏng thiết bị " + asset.getName()
+                );
+            }
         }
 
         messagingTemplate.convertAndSend("/topic/service-requests", dto);
@@ -148,6 +150,27 @@ public class MaintenanceService {
         }
 
         ServiceRequestDto result = serviceRequestMapper.toDto(serviceRequestRepository.save(serviceRequest));
+        
+        List<User> admins = userRepository.findByRoleIn(List.of(Role.ADMIN));
+        for (User admin : admins) {
+            if (!admin.getId().equals(currentUser.getId())) {
+                notificationService.sendNotification(
+                    admin,
+                    "Thiết bị đang được sửa chữa",
+                    "Thiết bị " + asset.getName() + " bắt đầu được sửa chữa bởi kỹ sư " + currentUser.getUsername()
+                );
+            }
+        }
+
+        User reporter = serviceRequest.getReportedBy();
+        if (reporter != null && reporter.getRole() != Role.ADMIN && !reporter.getId().equals(currentUser.getId())) {
+            notificationService.sendNotification(
+                reporter,
+                "Thiết bị đang được sửa chữa",
+                "Thiết bị " + asset.getName() + " bạn báo hỏng đã được kỹ sư " + currentUser.getUsername() + " tiếp nhận."
+            );
+        }
+
         messagingTemplate.convertAndSend("/topic/service-requests", result);
         return result;
     }
@@ -186,6 +209,29 @@ public class MaintenanceService {
             "Nhiệm vụ mới",
             "Bạn vừa được phân công sửa chữa thiết bị: " + asset.getName()
         );
+
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
+
+        List<User> admins = userRepository.findByRoleIn(List.of(Role.ADMIN));
+        for (User admin : admins) {
+            if ((currentUser == null || !admin.getId().equals(currentUser.getId())) && !admin.getId().equals(engineer.getId())) {
+                notificationService.sendNotification(
+                    admin,
+                    "Thiết bị đang được sửa chữa",
+                    "Thiết bị " + asset.getName() + " đã được phân công cho kỹ sư " + engineer.getUsername()
+                );
+            }
+        }
+
+        User reporter = serviceRequest.getReportedBy();
+        if (reporter != null && reporter.getRole() != Role.ADMIN && (currentUser == null || !reporter.getId().equals(currentUser.getId())) && !reporter.getId().equals(engineer.getId())) {
+            notificationService.sendNotification(
+                reporter,
+                "Thiết bị đang được sửa chữa",
+                "Thiết bị " + asset.getName() + " bạn báo hỏng đã được phân công cho kỹ sư " + engineer.getUsername()
+            );
+        }
 
         messagingTemplate.convertAndSend("/topic/service-requests", result);
 
@@ -280,9 +326,21 @@ public class MaintenanceService {
 
         ServiceRequestDto dto = serviceRequestMapper.toDto(savedRequest);
         
-        if (serviceRequest.getReportedBy() != null) {
+        List<User> admins = userRepository.findByRoleIn(List.of(Role.ADMIN));
+        for (User admin : admins) {
+            if (!admin.getId().equals(engineer.getId())) {
+                notificationService.sendNotification(
+                    admin,
+                    "Thiết bị đã được sửa xong",
+                    "Thiết bị " + asset.getName() + " đã được sửa xong bởi kỹ sư " + engineer.getUsername()
+                );
+            }
+        }
+
+        User reporter = serviceRequest.getReportedBy();
+        if (reporter != null && reporter.getRole() != Role.ADMIN && !reporter.getId().equals(engineer.getId())) {
             notificationService.sendNotification(
-                serviceRequest.getReportedBy(),
+                reporter,
                 "Thiết bị đã được sửa xong",
                 "Thiết bị " + asset.getName() + " bạn báo hỏng đã được sửa xong bởi kỹ sư " + engineer.getUsername()
             );
