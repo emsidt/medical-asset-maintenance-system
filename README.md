@@ -86,6 +86,20 @@ The project uses environment variables for sensitive configurations.
    ```
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Monitoring Setup (Prometheus & Grafana)
+The project includes a monitoring stack to track backend health and metrics.
+1. Ensure Docker and Docker Compose are installed on your machine.
+2. The backend must be running (see Backend Setup) because Prometheus will scrape metrics from it at `host.docker.internal:8080`.
+3. Open a new terminal and navigate to the root directory.
+4. Start the monitoring stack:
+   ```bash
+   docker-compose -f monitoring/docker-compose.yml up -d
+   ```
+5. Access the tools:
+   - **Prometheus**: [http://localhost:9090](http://localhost:9090)
+   - **Grafana**: [http://localhost:3001](http://localhost:3001) (Default login: `admin` / `admin`)
+   - Go to Grafana -> Dashboards -> Import, and import a Spring Boot dashboard (e.g. ID `4701` or `11378`) to visualize the metrics.
+
 
 ## 👥 Default Accounts (Seed Data)
 Every time the backend starts, the database is reset with these default accounts:

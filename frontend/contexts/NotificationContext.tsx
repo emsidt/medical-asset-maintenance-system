@@ -44,11 +44,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     useWebSocket((newNotification: NotificationDto) => {
         setNotifications((prev) => [newNotification, ...prev]);
         setUnreadCount((prev) => prev + 1);
-        
-        toast.info(newNotification.title, {
-            description: newNotification.message,
-            duration: 5000,
-        });
     });
 
     const markAsRead = async (id: number) => {
