@@ -39,14 +39,16 @@ export function UserListTable({ users }: UserListTableProps) {
     });
   }, [query, roleFilter, users]);
 
-  const getRoleVariant = (role: User["role"]): "default" | "secondary" | "destructive" | "outline" => {
+  const getRoleStyles = (role: User["role"]) => {
     switch (role) {
       case "DOCTOR":
-        return "secondary";
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200";
       case "ENGINEER":
-        return "outline";
+        return "bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-200";
+      case "ADMIN":
+        return "bg-slate-800 text-slate-100 hover:bg-slate-700 border-slate-700";
       default:
-        return "default";
+        return "bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200";
     }
   };
 
@@ -113,7 +115,7 @@ export function UserListTable({ users }: UserListTableProps) {
               <TableRow key={user.id ?? user.username}>
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>
-                  <Badge variant={getRoleVariant(user.role)}>
+                  <Badge className={getRoleStyles(user.role)}>
                     {roleLabels[user.role] || user.role}
                   </Badge>
                 </TableCell>

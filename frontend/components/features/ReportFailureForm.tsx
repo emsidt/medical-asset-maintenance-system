@@ -78,7 +78,7 @@ export function ReportFailureForm({ assetId, assetName, onSuccess }: ReportFailu
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="destructive" size="sm" className="gap-2">
+          <Button variant="destructive" size="sm" className="gap-2 w-36">
             <AlertCircle className="h-4 w-4" />
             Báo cáo sự cố
           </Button>

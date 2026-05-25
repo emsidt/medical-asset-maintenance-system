@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Settings, LogOut, ClipboardList, BarChart3, User, Boxes, Users } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, LogOut, ClipboardList, BarChart3, User, Boxes, Users, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logout } from '@/actions/auth';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ export function Sidebar({ userRole }: SidebarProps) {
     { name: 'Thống kê tổng quan', href: '/dashboard', icon: BarChart3, roles: ['ADMIN'] },
     { name: 'Yêu cầu sửa chữa & Thiết bị', href: '/assets', icon: Package, roles: ['ADMIN', 'DOCTOR'] },
     { name: 'Xử lý sửa chữa', href: '/repairs', icon: ClipboardList, roles: ['ADMIN', 'ENGINEER'] },
+    { name: 'Bảo trì định kỳ', href: '/maintenance', icon: Wrench, roles: ['ADMIN', 'ENGINEER'] },
     { name: 'Kho & Linh kiện', href: '/management/inventory', icon: Package, roles: ['ADMIN'] },
     { name: 'Quản lý thiết bị', href: '/management/assets', icon: Settings, roles: ['ADMIN'] },
     { name: 'Quản lý nhân sự', href: '/management/staff', icon: User, roles: ['ADMIN'] },

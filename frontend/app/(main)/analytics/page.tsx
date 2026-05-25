@@ -12,15 +12,30 @@ import {
 import { AssetScore, DepartmentScore, RiskLevel } from "@/types";
 import { Activity, Building2, Gauge, Wrench } from "lucide-react";
 
-function riskVariant(riskLevel: RiskLevel): "default" | "secondary" | "destructive" | "outline" {
+const statusLabels: Record<string, string> = {
+  AVAILABLE: "Sẵn sàng",
+  BROKEN: "Hỏng hóc",
+  UNDER_MAINTENANCE: "Đang bảo trì",
+  MAINTENANCE_DUE: "Đến hạn bảo trì",
+};
+
+const statusBadgeStyles: Record<string, string> = {
+  AVAILABLE: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 border font-medium",
+  UNDER_MAINTENANCE: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 border font-medium",
+  BROKEN: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 border font-medium",
+  MAINTENANCE_DUE: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 border font-medium",
+};
+
+function getRiskStyles(riskLevel: RiskLevel): string {
   switch (riskLevel) {
     case "VERY_HIGH":
+      return "bg-red-100 text-red-800 border-red-200 hover:bg-red-200 font-bold";
     case "HIGH":
-      return "destructive";
+      return "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200 font-semibold";
     case "MEDIUM":
-      return "outline";
+      return "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200 font-medium";
     default:
-      return "secondary";
+      return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200 font-medium";
   }
 }
 
@@ -139,7 +154,7 @@ function DepartmentScoreTable({ scores }: { scores: DepartmentScore[] }) {
                 <TableCell>{score.avgDowntimeHours}h</TableCell>
                 <TableCell className="font-semibold">{score.score}</TableCell>
                 <TableCell>
-                  <Badge variant={riskVariant(score.riskLevel)}>{formatRisk(score.riskLevel)}</Badge>
+                  <Badge className={getRiskStyles(score.riskLevel)}>{formatRisk(score.riskLevel)}</Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -178,13 +193,17 @@ function AssetScoreTable({ scores }: { scores: AssetScore[] }) {
                   <div className="text-xs text-muted-foreground">{score.assetCode}</div>
                 </TableCell>
                 <TableCell>{score.departmentName ?? "Unassigned"}</TableCell>
-                <TableCell>{score.assetStatus.replace("_", " ")}</TableCell>
+                <TableCell>
+                  <Badge className={statusBadgeStyles[score.assetStatus] || "bg-gray-100 text-gray-800"}>
+                    {statusLabels[score.assetStatus] || score.assetStatus.replace("_", " ")}
+                  </Badge>
+                </TableCell>
                 <TableCell>{score.repairCount90d}</TableCell>
                 <TableCell>{score.repairCount365d}</TableCell>
                 <TableCell>{score.usedPartQuantity365d}</TableCell>
                 <TableCell className="font-semibold">{score.score}</TableCell>
                 <TableCell>
-                  <Badge variant={riskVariant(score.riskLevel)}>{formatRisk(score.riskLevel)}</Badge>
+                  <Badge className={getRiskStyles(score.riskLevel)}>{formatRisk(score.riskLevel)}</Badge>
                 </TableCell>
               </TableRow>
             ))}

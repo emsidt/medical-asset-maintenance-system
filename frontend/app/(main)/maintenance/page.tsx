@@ -22,7 +22,7 @@ import { Send, Wrench, Play } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
-export default function RepairsPage() {
+export default function MaintenancePage() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [engineers, setEngineers] = useState<User[]>([]);
@@ -141,16 +141,16 @@ export default function RepairsPage() {
     );
   }
 
-  const repairRequests = requests.filter(r => !r.description?.startsWith("Bảo trì định kỳ"));
-  const activeRequests = repairRequests.filter(r => r.status !== "COMPLETED");
-  const completedRequests = repairRequests.filter(r => r.status === "COMPLETED");
+  const maintenanceRequests = requests.filter(r => r.description?.startsWith("Bảo trì định kỳ"));
+  const activeRequests = maintenanceRequests.filter(r => r.status !== "COMPLETED");
+  const completedRequests = maintenanceRequests.filter(r => r.status === "COMPLETED");
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Yêu cầu sửa chữa hỏng hóc</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Bảo trì định kỳ</h1>
         <p className="text-muted-foreground mt-2">
-          Quản lý các yêu cầu sửa chữa sự cố đột xuất đang chờ xử lý và đã phân công.
+          Quản lý các yêu cầu bảo dưỡng định kỳ hệ thống.
         </p>
       </div>
 
