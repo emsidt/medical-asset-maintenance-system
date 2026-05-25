@@ -49,7 +49,7 @@ public class MaintenanceService {
         Asset asset = assetRepository.findById(assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found with id: " + assetId));
 
-        if (asset.getStatus() != AssetStatus.AVAILABLE) {
+        if (asset.getStatus() != AssetStatus.AVAILABLE && asset.getStatus() != AssetStatus.MAINTENANCE_DUE) {
             throw new BusinessException("Asset is currently " + asset.getStatus());
         }
 
@@ -89,6 +89,15 @@ public class MaintenanceService {
     @Transactional(readOnly = true)
     public List<ServiceRequestDto> getAllServiceRequests() {
         return serviceRequestRepository.findAll().stream()
+                .map(serviceRequestMapper::toDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceRequestDto> getActiveServiceRequestsByAssetId(Long assetId) {
+        return serviceRequestRepository.findByAssetIdAndStatusInOrderByCreatedAtDesc(
+                        assetId, List.of(RequestStatus.PENDING, RequestStatus.ASSIGNED))
+                .stream()
                 .map(serviceRequestMapper::toDto)
                 .toList();
     }
@@ -317,10 +326,23 @@ public class MaintenanceService {
 
         ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
 
-        // Update Asset
+        // Update Asset Status based on remaining pending requests
         Asset asset = serviceRequest.getAsset();
         if (asset != null) {
-            asset.setStatus(AssetStatus.AVAILABLE);
+            List<ServiceRequest> pendingRequests = serviceRequestRepository.findByAssetIdAndStatusInOrderByCreatedAtDesc(
+                    asset.getId(), List.of(RequestStatus.PENDING));
+            
+            if (pendingRequests.isEmpty()) {
+                asset.setStatus(AssetStatus.AVAILABLE);
+            } else {
+                boolean hasFailure = pendingRequests.stream()
+                        .anyMatch(r -> r.getDescription() == null || !r.getDescription().startsWith("Bảo trì định kỳ"));
+                if (hasFailure) {
+                    asset.setStatus(AssetStatus.BROKEN);
+                } else {
+                    asset.setStatus(AssetStatus.MAINTENANCE_DUE);
+                }
+            }
             assetRepository.save(asset);
         }
 

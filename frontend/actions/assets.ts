@@ -125,3 +125,22 @@ export async function updateAsset(id: number | string, asset: Partial<Asset>) {
     return { success: false, message: "Error updating asset" };
   }
 }
+
+export async function getActiveRequests(assetId: number | string): Promise<import("@/types").ServiceRequest[]> {
+  const authHeaders = await getAuthHeaders();
+
+  try {
+    const response = await fetch(`${API_URL}/assets/${assetId}/active-requests`, {
+      headers: { ...authHeaders },
+      next: { revalidate: 0 },
+    });
+
+    if (!response.ok) throw new Error("Failed to fetch active requests");
+
+    const result: ApiResponse<import("@/types").ServiceRequest[]> = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error(`Could not fetch active requests for asset ${assetId}:`, error);
+    return [];
+  }
+}

@@ -99,7 +99,7 @@ public class MaintenanceController {
 
     @Operation(summary = "Complete assigned repair request (Engineer)")
     @PostMapping("/service-requests/{id}/complete")
-    @PreAuthorize("hasAnyRole('ENGINEER', 'ADMIN')")
+    @PreAuthorize("hasRole('ENGINEER')")
     public ResponseEntity<ApiResponse<ServiceRequestDto>> completeRepair(
             @PathVariable Long id,
             @RequestBody CompleteRepairRequest request) {
@@ -110,7 +110,7 @@ public class MaintenanceController {
 
     @Operation(summary = "Bắt đầu bảo trì/sửa chữa (Engineer)")
     @PostMapping("/service-requests/{id}/start")
-    @PreAuthorize("hasAnyRole('ENGINEER', 'ADMIN')")
+    @PreAuthorize("hasRole('ENGINEER')")
     public ResponseEntity<ApiResponse<ServiceRequestDto>> startMaintenance(@PathVariable Long id) {
         ServiceRequestDto result = maintenanceService.startMaintenance(id);
         return ResponseEntity.ok(ApiResponse.success(result, "Maintenance started successfully"));

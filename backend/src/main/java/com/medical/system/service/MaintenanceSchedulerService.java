@@ -85,8 +85,10 @@ public class MaintenanceSchedulerService {
                 );
             }
 
-            // Cập nhật trạng thái sang MAINTENANCE_DUE để thông báo
-            asset.setStatus(AssetStatus.MAINTENANCE_DUE);
+            // Cập nhật trạng thái sang MAINTENANCE_DUE để thông báo (chỉ khi đang rảnh)
+            if (asset.getStatus() == AssetStatus.AVAILABLE) {
+                asset.setStatus(AssetStatus.MAINTENANCE_DUE);
+            }
             // Cập nhật lịch bảo trì tiếp theo sang 90 ngày sau (chu kỳ bảo trì định kỳ)
             asset.setNextMaintenanceDate(LocalDate.now().plusDays(90));
             assetRepository.save(asset);

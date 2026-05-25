@@ -106,6 +106,14 @@ public class AssetController {
         return ResponseEntity.ok(ApiResponse.success(result, "Asset failure reported successfully"));
     }
 
+    @Operation(summary = "Lấy danh sách các yêu cầu sửa chữa/bảo trì đang xử lý của thiết bị")
+    @GetMapping("/{id}/active-requests")
+    @PreAuthorize("hasAnyRole('ENGINEER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<ServiceRequestDto>>> getActiveRequests(@PathVariable Long id) {
+        List<ServiceRequestDto> result = maintenanceService.getActiveServiceRequestsByAssetId(id);
+        return ResponseEntity.ok(ApiResponse.success(result, "Active requests retrieved successfully"));
+    }
+
     private AssetDto mapToDto(com.medical.system.model.entity.Asset a) {
         return AssetDto.builder()
                 .id(a.getId())
