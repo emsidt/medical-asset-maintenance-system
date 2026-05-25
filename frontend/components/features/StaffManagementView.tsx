@@ -253,11 +253,25 @@ export function StaffManagementView({ initialStaff }: StaffManagementViewProps) 
                   DOCTOR: "Bác sĩ",
                   ENGINEER: "Kỹ sư",
                 };
+                
+                const getRoleStyles = (role: string) => {
+                  switch (role) {
+                    case "DOCTOR":
+                      return "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200";
+                    case "ENGINEER":
+                      return "bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-200";
+                    case "ADMIN":
+                      return "bg-slate-800 text-slate-100 hover:bg-slate-700 border-slate-700";
+                    default:
+                      return "bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200";
+                  }
+                };
+
                 return (
                   <TableRow key={member.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-semibold">{member.username}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="font-mono text-xs">
+                      <Badge className={getRoleStyles(member.role)}>
                         {roleLabels[member.role] || member.role}
                       </Badge>
                     </TableCell>

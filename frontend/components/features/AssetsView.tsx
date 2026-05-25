@@ -170,7 +170,7 @@ export function AssetsView({ assets, inventory = [], userRole }: AssetsViewProps
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-blue-500 text-blue-600 hover:bg-blue-50 ml-2"
+                        className="w-36 border-blue-500 text-blue-600 hover:bg-blue-50 ml-2"
                         onClick={() => handleActionClick(asset.id, 'start')}
                         disabled={loadingAssetId === asset.id}
                       >
@@ -186,7 +186,7 @@ export function AssetsView({ assets, inventory = [], userRole }: AssetsViewProps
                     {asset.status === 'UNDER_MAINTENANCE' && isEngineer && (
                       <Button
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white ml-2"
+                        className="w-36 bg-green-600 hover:bg-green-700 text-white ml-2"
                         onClick={() => handleActionClick(asset.id, 'complete')}
                         disabled={loadingAssetId === asset.id}
                       >

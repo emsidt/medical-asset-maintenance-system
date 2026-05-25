@@ -198,6 +198,7 @@ export default function MaintenancePage() {
                           <Button
                             size="sm"
                             variant="outline"
+                            className="w-36"
                             onClick={() => handleAssignClick(req)}
                           >
                             <Send className="w-4 h-4 mr-2" />
@@ -207,7 +208,7 @@ export default function MaintenancePage() {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                            className="w-36 border-blue-500 text-blue-600 hover:bg-blue-50"
                             onClick={() => handleStartMaintenance(req.id)}
                           >
                             <Play className="w-4 h-4 mr-2" />
@@ -222,6 +223,7 @@ export default function MaintenancePage() {
                         currentUser?.role === "ENGINEER" && isAssignedToMe ? (
                           <Button
                             size="sm"
+                            className="w-36 bg-green-600 hover:bg-green-700 text-white"
                             onClick={() => handleCompleteClick(req)}
                           >
                             <Wrench className="w-4 h-4 mr-2" />
