@@ -44,3 +44,12 @@ management:
   metrics:
     tags:
       application: asset-maintenance
+
+rag:
+  jwt:
+    secret:
+    expiration-ms:
+    issuer:
+    audience:
+  service:
+    public-url:
