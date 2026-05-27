@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -99,6 +100,7 @@ public class AssetController {
     @Operation(summary = "Báo hỏng thiết bị (Doctor)")
     @PostMapping("/{id}/report-failure")
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    @CacheEvict(value = "dashboard_stats", allEntries = true)
     public ResponseEntity<ApiResponse<ServiceRequestDto>> reportFailure(
             @PathVariable Long id,
             @Valid @RequestBody ReportFailureRequest request) {

@@ -14,6 +14,7 @@ import com.medical.system.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,6 +106,7 @@ public class MaintenanceSchedulerService {
      * - Danh sách linh kiện sắp hết hàng (Low Stock Alerts)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "dashboard_stats")
     public DashboardStatsDto getDashboardStats() {
 
         // --- Thống kê Asset theo trạng thái ---

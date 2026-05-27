@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.springframework.http.CacheControl;
 
 @RestController
 @RequestMapping("/api/departments")
@@ -25,6 +27,9 @@ public class DepartmentController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Department>>> getAllDepartments() {
         List<Department> departments = departmentRepository.findAll();
-        return ResponseEntity.ok(ApiResponse.success(departments, "Departments retrieved successfully"));
+        CacheControl cacheControl = CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic();
+        return ResponseEntity.ok()
+                .cacheControl(cacheControl)
+                .body(ApiResponse.success(departments, "Departments retrieved successfully"));
     }
 }
