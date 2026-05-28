@@ -89,43 +89,45 @@ jobs:
           cache-to: type=gha,mode=max
 
   # 4. Trigger Deployment (Zero-Downtime)
-  deploy:
-    name: Deploy to Production
-    needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-
-      - name: Prepare kubeconfig and SSH tunnel
-        shell: bash
-        run: |
-          mkdir -p ~/.kube ~/.ssh
-          printf '%s' "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
-          printf '%s' "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/vm_key
-          chmod 600 ~/.ssh/vm_key
-          ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/vm_key -fN \
-            -o ExitOnForwardFailure=yes \
-            -o ServerAliveInterval=30 \
-            -L 6443:127.0.0.1:6443 \
-            "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}"
-          kubectl get nodes
-
-      - name: Patch deployment config
-        shell: bash
-        run: |
-          # Dùng kustomize edit để tự động sửa tag thay vì dùng sed
-          cd k8s
-          kustomize edit set image backend-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA}
-
-      - name: Apply manifests
-        run: kubectl apply -k k8s/
-
-      - name: Wait for rollout (Zero Downtime)
-        shell: bash
-        run: |
-          kubectl rollout status deployment/backend -n medical-system --timeout=600s
+  # Tạm thời comment lại vì chưa có Server VPS thật
+  # deploy:
+  #   name: Deploy to Production
+  #   needs: build-and-push
+  #   environment: production
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Install kubectl
+  #       uses: azure/setup-kubectl@v4
+  #
+  #     - name: Prepare kubeconfig and SSH tunnel
+  #       shell: bash
+  #       run: |
+  #         mkdir -p ~/.kube ~/.ssh
+  #         printf '%s' "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+  #         printf '%s' "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/vm_key
+  #         chmod 600 ~/.ssh/vm_key
+  #         ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
+  #         ssh -i ~/.ssh/vm_key -fN \
+  #           -o ExitOnForwardFailure=yes \
+  #           -o ServerAliveInterval=30 \
+  #           -L 6443:127.0.0.1:6443 \
+  #           "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}"
+  #         kubectl get nodes
+  #
+  #     - name: Patch deployment config
+  #       shell: bash
+  #       run: |
+  #         # Dùng kustomize edit để tự động sửa tag thay vì dùng sed
+  #         cd k8s
+  #         kustomize edit set image backend-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA}
+  #
+  #     - name: Apply manifests
+  #       run: kubectl apply -k k8s/
+  #
+  #     - name: Wait for rollout (Zero Downtime)
+  #       shell: bash
+  #       run: |
+  #         kubectl rollout status deployment/backend -n medical-system --timeout=600s
