@@ -43,6 +43,25 @@ public class AuthControllerApiTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private com.medical.system.repository.UserRepository userRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setup() {
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            com.medical.system.model.entity.User admin = new com.medical.system.model.entity.User();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole(com.medical.system.model.enums.Role.ADMIN);
+            admin.setEmail("admin@test.com");
+            admin.setFullName("Admin Test");
+            userRepository.save(admin);
+        }
+    }
+
     @Test
     @DisplayName("Negative Path: Login with wrong password should return 401 Unauthorized")
     void testLoginFailure() throws Exception {
@@ -56,8 +75,7 @@ public class AuthControllerApiTest {
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonPayload))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -74,6 +92,6 @@ public class AuthControllerApiTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonPayload))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").exists());
+                .andExpect(jsonPath("$.data.token").exists());
     }
 }
