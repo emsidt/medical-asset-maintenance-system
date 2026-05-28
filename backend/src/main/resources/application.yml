@@ -1,4 +1,6 @@
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/medical_system?createDatabaseIfNotExist=true}
     username: ${SPRING_DATASOURCE_USERNAME:root}
@@ -24,6 +26,7 @@ app:
 
 server:
   port: ${SERVER_PORT:8080}
+  shutdown: graceful
 
 springdoc:
   api-docs:
@@ -39,6 +42,13 @@ management:
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
   prometheus:
     metrics:
       export:
