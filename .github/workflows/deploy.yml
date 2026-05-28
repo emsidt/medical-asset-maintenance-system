@@ -1,0 +1,57 @@
+name: Deploy to Production (CD)
+
+on:
+  workflow_run:
+    workflows: ["Backend CI/CD Enterprise Pipeline", "Frontend CI"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Continuous Deployment
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      
+      - name: Prepare kubeconfig and SSH tunnel
+        shell: bash
+        run: |
+          mkdir -p ~/.kube ~/.ssh
+          printf '%s' "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          printf '%s' "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/vm_key
+          chmod 600 ~/.ssh/vm_key
+          ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/vm_key -fN \
+            -o ExitOnForwardFailure=yes \
+            -o ServerAliveInterval=30 \
+            -L 6443:127.0.0.1:6443 \
+            "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}"
+          kubectl get nodes
+      
+      - name: Patch deployment config
+        shell: bash
+        run: |
+          cd k8s
+          echo "Kustomization đã trỏ sẵn vào thẻ latest"
+      
+      - name: Apply manifests
+        run: kubectl apply -k k8s/
+      
+      - name: Wait for rollout (Zero Downtime)
+        shell: bash
+        run: |
+          # Bắt buộc kéo ảnh mới nhất từ GHCR về
+          kubectl rollout restart deployment/backend-deployment -n medical-system
+          kubectl rollout restart deployment/frontend-deployment -n medical-system
+          
+          kubectl rollout status deployment/backend-deployment -n medical-system --timeout=600s
+          kubectl rollout status deployment/frontend-deployment -n medical-system --timeout=600s
