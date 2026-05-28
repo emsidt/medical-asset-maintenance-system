@@ -30,9 +30,8 @@ jobs:
         run: |
           mkdir -p ~/.kube ~/.ssh
           echo "$KUBE_CONFIG" > ~/.kube/config
-          echo "$VM_SSH_KEY" > ~/.ssh/vm_key
-          # Đảm bảo có dòng trống ở cuối file bằng lệnh echo rỗng (giúp tránh lỗi libcrypto)
-          echo "" >> ~/.ssh/vm_key
+          # Giải mã Base64 để đảm bảo 100% định dạng không bị sai lệch bởi Windows/Trình duyệt
+          echo "$VM_SSH_KEY" | base64 -d > ~/.ssh/vm_key
           
           chmod 600 ~/.ssh/vm_key
           ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
