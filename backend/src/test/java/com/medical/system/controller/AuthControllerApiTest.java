@@ -56,8 +56,6 @@ public class AuthControllerApiTest {
             admin.setUsername("admin");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(com.medical.system.model.enums.Role.ADMIN);
-            admin.setEmail("admin@test.com");
-            admin.setFullName("Admin Test");
             userRepository.save(admin);
         }
     }
