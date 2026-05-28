@@ -1,22 +1,22 @@
-# 🏗️ Kiến Trúc Hệ Thống RAG Chatbot - Quản Lý Bảo Trì Thiết Bị Y Tế
+# 🏗️ Kiến Trúc Hệ Thống RAG Chatbot — Quản Lý Bảo Trì Thiết Bị Y Tế
 
 > Tài liệu mô tả chi tiết kiến trúc và các luồng xử lý (flow) của hệ thống RAG Chatbot,
-> dựa trên mã nguồn thực tế tại repository `RAGchatbot/`.
+> dựa trên mã nguồn thực tế tại thư mục `RAGchatbot/`.
 
 ---
 
 ## 📑 Mục Lục
 
-1. [Tổng Quan Hệ Thống](#1-tổng-quan-hệ-thống)
-2. [Công Nghệ Sử Dụng](#2-công-nghệ-sử-dụng)
-3. [Cấu Trúc Thư Mục](#3-cấu-trúc-thư-mục)
-4. [Sơ Đồ Kiến Trúc Tổng Quan](#4-sơ-đồ-kiến-trúc-tổng-quan)
-5. [Luồng Khởi Động Ứng Dụng](#5-luồng-khởi-động-ứng-dụng)
-6. [Luồng Xác Thực (Authentication)](#6-luồng-xác-thực-authentication)
-7. [Luồng Tạo Phiên Chat](#7-luồng-tạo-phiên-chat)
-8. [Luồng Xử Lý Tin Nhắn (Core Flow)](#8-luồng-xử-lý-tin-nhắn-core-flow)
-9. [Luồng Phân Loại Ý Định (Intent Classification)](#9-luồng-phân-loại-ý-định-intent-classification)
-10. [Luồng RAG - Hỏi Đáp Quy Trình (Q_AND_A)](#10-luồng-rag---hỏi-đáp-quy-trình-q_and_a)
+1.  [Tổng Quan Hệ Thống](#1-tổng-quan-hệ-thống)
+2.  [Công Nghệ Sử Dụng](#2-công-nghệ-sử-dụng)
+3.  [Cấu Trúc Thư Mục](#3-cấu-trúc-thư-mục)
+4.  [Sơ Đồ Kiến Trúc Tổng Quan](#4-sơ-đồ-kiến-trúc-tổng-quan)
+5.  [Luồng Khởi Động Ứng Dụng](#5-luồng-khởi-động-ứng-dụng)
+6.  [Luồng Xác Thực (Authentication)](#6-luồng-xác-thực-authentication)
+7.  [Luồng Tạo Phiên Chat](#7-luồng-tạo-phiên-chat)
+8.  [Luồng Xử Lý Tin Nhắn (Core Flow)](#8-luồng-xử-lý-tin-nhắn-core-flow)
+9.  [Luồng Phân Loại Ý Định (Intent Classification)](#9-luồng-phân-loại-ý-định-intent-classification)
+10. [Luồng RAG — Hỏi Đáp Quy Trình (Q_AND_A)](#10-luồng-rag--hỏi-đáp-quy-trình-q_and_a)
 11. [Luồng Tra Cứu Sửa Chữa (REPAIR_STATUS)](#11-luồng-tra-cứu-sửa-chữa-repair_status)
 12. [Luồng Báo Hỏng Thiết Bị (CREATE_REPAIR_REQUEST)](#12-luồng-báo-hỏng-thiết-bị-create_repair_request)
 13. [Luồng Chat Tự Do (GENERAL)](#13-luồng-chat-tự-do-general)
@@ -34,29 +34,29 @@ Hệ thống là một **RAG Chatbot thông minh** phục vụ quản lý bảo 
 
 ### Bốn chức năng nghiệp vụ chính:
 
-| # | Ý Định (Intent) | Mô Tả |
-|---|---|---|
-| 1 | **Q_AND_A** | Hỏi đáp quy trình kỹ thuật, hướng dẫn sử dụng thiết bị dựa trên tài liệu (RAG thực thụ) |
-| 2 | **REPAIR_STATUS** | Tra cứu trạng thái sửa chữa thiết bị từ cơ sở dữ liệu MySQL (có phân quyền RBAC) |
-| 3 | **CREATE_REPAIR_REQUEST** | Tạo phiếu báo hỏng thiết bị trực tiếp qua chat |
-| 4 | **GENERAL** | Chào hỏi, trò chuyện tự do, giới thiệu chức năng chatbot |
+| #   | Ý Định (Intent)           | Mô Tả                                                                                     |
+| --- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | **Q_AND_A**               | Hỏi đáp quy trình kỹ thuật, hướng dẫn sử dụng thiết bị dựa trên tài liệu (RAG thực thụ) |
+| 2   | **REPAIR_STATUS**         | Tra cứu trạng thái sửa chữa thiết bị từ cơ sở dữ liệu MySQL (có phân quyền RBAC)        |
+| 3   | **CREATE_REPAIR_REQUEST** | Tạo phiếu báo hỏng thiết bị trực tiếp qua chat                                           |
+| 4   | **GENERAL**               | Chào hỏi, trò chuyện tự do, giới thiệu chức năng chatbot                                  |
 
 ---
 
 ## 2. Công Nghệ Sử Dụng
 
-| Thành Phần | Công Nghệ |
-|---|---|
-| Web Framework | **FastAPI** |
-| ASGI Server | **Uvicorn** |
-| LLM Provider | **Google Gemini** (`gemini-2.5-flash`) via `langchain-google-genai` |
-| Intent Classifier | **Gemini** (JSON mode, `temperature=0.0`) |
-| Embedding Model | **HuggingFace** `sentence-transformers/all-MiniLM-L6-v2` |
-| Vector Store | **ChromaDB** (persistent, top-k=5) |
-| Relational DB | **MySQL** via SQLAlchemy Async + `aiomysql` |
-| Authentication | **JWT Bearer** (HS256, scope `rag:chat`) |
-| Streaming | **Server-Sent Events (SSE)** |
-| Schema Validation | **Pydantic** |
+| Thành Phần        | Công Nghệ                                                         |
+| ------------------ | ------------------------------------------------------------------ |
+| Web Framework      | **FastAPI**                                                        |
+| ASGI Server        | **Uvicorn**                                                        |
+| LLM Provider       | **Google Gemini** (`gemini-2.5-flash`) via `langchain-google-genai` |
+| Intent Classifier  | **Gemini** (JSON mode, `temperature=0.0`)                          |
+| Embedding Model    | **HuggingFace** `sentence-transformers/all-MiniLM-L6-v2`           |
+| Vector Store       | **ChromaDB** (persistent, top-k=5)                                 |
+| Relational DB      | **MySQL** via SQLAlchemy Async + `aiomysql`                        |
+| Authentication     | **JWT Bearer** (HS256, scope `rag:chat`)                           |
+| Streaming          | **Server-Sent Events (SSE)**                                       |
+| Schema Validation  | **Pydantic**                                                       |
 
 ---
 
@@ -107,92 +107,98 @@ RAGchatbot/
 
 ## 4. Sơ Đồ Kiến Trúc Tổng Quan
 
-```mermaid
-graph TB
-    subgraph CLIENT["🖥️ Client / Frontend"]
-        FE["Giao diện người dùng"]
-    end
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          🖥️  CLIENT / FRONTEND                                 │
+│                         ┌─────────────────────┐                                 │
+│                         │  Giao diện người dùng │                                │
+│                         └─────────┬───────────┘                                 │
+└───────────────────────────────────┼─────────────────────────────────────────────┘
+                                    │ POST /sessions
+                                    │ POST /stream
+                                    │ + Bearer JWT
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          ⚡ FASTAPI SERVER                                      │
+│                                                                                 │
+│  ┌──────────────────┐    ┌──────────────────┐                                   │
+│  │ API Layer        │───▶│ Auth Layer       │                                   │
+│  │ chat_routes.py   │    │ JWT Bearer HS256 │                                   │
+│  └────────┬─────────┘    └──────────────────┘                                   │
+│           │                                                                     │
+│           ▼                                                                     │
+│  ┌────────────────────────────────────────────────────────────────────────┐      │
+│  │                       📦  SERVICE LAYER                               │      │
+│  │                                                                       │      │
+│  │  ┌──────────────────┐    ┌──────────────────┐   ┌──────────────────┐  │      │
+│  │  │ chat_service.py  │───▶│ rag_service.py   │──▶│ router_service   │  │      │
+│  │  │ Điều phối SSE    │    │ Dispatcher       │   │ Intent Classifier│  │      │
+│  │  └──────────────────┘    └───────┬──────────┘   └──────────────────┘  │      │
+│  │                                  │                                    │      │
+│  │                    ┌─────────────┼─────────────┐                      │      │
+│  │                    ▼             ▼             ▼                      │      │
+│  │  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐      │      │
+│  │  │ retriever_svc    │ │ db_query_svc     │ │ llm_service.py   │      │      │
+│  │  │ ChromaDB Search  │ │ CSDL + RBAC      │ │ Gemini Client    │      │      │
+│  │  └────────┬─────────┘ └────────┬─────────┘ └────────┬─────────┘      │      │
+│  │           │                    │                     │                │      │
+│  └───────────┼────────────────────┼─────────────────────┼────────────────┘      │
+│              │                    │                     │                        │
+│  ┌───────────┼────────────────────┼─────────────────────┼────────────────┐      │
+│  │           │     📂  REPOSITORY LAYER                 │                │      │
+│  │           │    ┌──────────────────┐  ┌──────────────────┐             │      │
+│  │           │    │ session_repo     │  │ message_repo     │             │      │
+│  │           │    └────────┬─────────┘  └────────┬─────────┘             │      │
+│  └───────────┼─────────────┼─────────────────────┼───────────────────────┘      │
+└──────────────┼─────────────┼─────────────────────┼──────────────────────────────┘
+               │             │                     │
+               ▼             ▼                     ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                          💾  TẦNG LƯU TRỮ                                       │
+│                                                                                  │
+│   ┌──────────────────┐         ┌──────────────────────────────────────────┐       │
+│   │ ChromaDB         │         │ MySQL                                   │       │
+│   │ Vector Store     │         │ rag_chat_sessions | rag_chat_messages   │       │
+│   │ FAQ & Hướng dẫn  │         │ assets | service_requests | users       │       │
+│   └──────────────────┘         └──────────────────────────────────────────┘       │
+│                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────┘
 
-    subgraph FASTAPI["⚡ FastAPI Server"]
-        direction TB
-        ROUTES["API Layer<br/>chat_routes.py"]
-        AUTH["Auth Layer<br/>JWT Bearer HS256"]
-        
-        subgraph SERVICES["📦 Service Layer"]
-            direction TB
-            CHAT_SVC["chat_service.py<br/>Điều phối SSE Stream"]
-            RAG_SVC["rag_service.py<br/>Dispatcher Trung Tâm"]
-            ROUTER_SVC["router_service.py<br/>Intent Classifier"]
-            DB_QUERY_SVC["db_query_service.py<br/>Truy vấn CSDL"]
-            LLM_SVC["llm_service.py<br/>Gemini Client"]
-            RETRIEVER_SVC["retriever_service.py<br/>ChromaDB Retriever"]
-        end
-
-        subgraph REPOS["📂 Repository Layer"]
-            SESSION_REPO["session_repository.py"]
-            MESSAGE_REPO["message_repository.py"]
-        end
-    end
-
-    subgraph EXTERNAL["🌐 Dịch Vụ Bên Ngoài"]
-        GEMINI["Google Gemini API<br/>gemini-2.5-flash"]
-    end
-
-    subgraph DATA["💾 Tầng Lưu Trữ"]
-        MYSQL[("MySQL<br/>rag_chat_sessions<br/>rag_chat_messages<br/>assets<br/>service_requests<br/>users")]
-        CHROMA[("ChromaDB<br/>Vector Store<br/>FAQ & Hướng dẫn")]
-    end
-
-    FE -->|"POST /sessions<br/>POST /stream<br/>+ Bearer JWT"| ROUTES
-    ROUTES --> AUTH
-    AUTH --> CHAT_SVC
-    CHAT_SVC --> RAG_SVC
-    RAG_SVC --> ROUTER_SVC
-    ROUTER_SVC -->|"Phân loại Intent"| GEMINI
-    RAG_SVC -->|"Q_AND_A"| RETRIEVER_SVC
-    RAG_SVC -->|"REPAIR_STATUS<br/>CREATE_REPAIR_REQUEST"| DB_QUERY_SVC
-    RAG_SVC -->|"Stream tokens"| LLM_SVC
-    LLM_SVC --> GEMINI
-    RETRIEVER_SVC --> CHROMA
-    DB_QUERY_SVC --> MYSQL
-    CHAT_SVC --> MESSAGE_REPO
-    CHAT_SVC --> SESSION_REPO
-    MESSAGE_REPO --> MYSQL
-    SESSION_REPO --> MYSQL
-
-    style CLIENT fill:#1a1a2e,stroke:#e94560,color:#fff
-    style FASTAPI fill:#16213e,stroke:#0f3460,color:#fff
-    style SERVICES fill:#0f3460,stroke:#533483,color:#fff
-    style REPOS fill:#0f3460,stroke:#533483,color:#fff
-    style EXTERNAL fill:#533483,stroke:#e94560,color:#fff
-    style DATA fill:#1a1a2e,stroke:#e94560,color:#fff
+                          ┌──────────────────┐
+                          │ 🌐  Google       │
+               ◀─────────│ Gemini API       │
+                          │ gemini-2.5-flash │
+                          └──────────────────┘
 ```
 
 ---
 
 ## 5. Luồng Khởi Động Ứng Dụng
 
-```mermaid
-sequenceDiagram
-    participant UV as Uvicorn
-    participant APP as FastAPI App
-    participant LS as Lifespan
-    participant DB as MySQL
-    participant EMB as Embedding Model
-    participant VDB as ChromaDB
-
-    UV->>APP: Khởi động ứng dụng
-    APP->>LS: Bắt đầu lifespan context
-    LS->>DB: init_models() → Tạo bảng nếu chưa tồn tại
-    DB-->>LS: ✅ Bảng đã sẵn sàng
-    
-    Note over EMB,VDB: Các service import-level initialization
-    EMB->>EMB: Load HuggingFace<br/>all-MiniLM-L6-v2
-    VDB->>VDB: Kết nối ChromaDB<br/>persist_directory=./vector_db
-
-    LS-->>APP: ✅ Startup hoàn tất
-    APP->>APP: Include chat_routes router
-    APP-->>UV: ✅ Sẵn sàng nhận request
+```
+  Uvicorn              FastAPI App           Lifespan            MySQL           Embedding/ChromaDB
+    │                      │                    │                  │                    │
+    │── Khởi động ────────▶│                    │                  │                    │
+    │                      │── Bắt đầu ────────▶│                  │                    │
+    │                      │   lifespan          │                  │                    │
+    │                      │                    │── init_models() ─▶│                    │
+    │                      │                    │   Tạo bảng nếu   │                    │
+    │                      │                    │   chưa tồn tại   │                    │
+    │                      │                    │◀─ ✅ Sẵn sàng ───│                    │
+    │                      │                    │                  │                    │
+    │                      │                    │     [Các service import-level init]    │
+    │                      │                    │                  │    Load HuggingFace │
+    │                      │                    │                  │    all-MiniLM-L6-v2 │
+    │                      │                    │                  │    Kết nối ChromaDB │
+    │                      │                    │                  │    ./vector_db      │
+    │                      │                    │                  │                    │
+    │                      │◀─ ✅ Startup ──────│                  │                    │
+    │                      │   hoàn tất         │                  │                    │
+    │                      │                    │                  │                    │
+    │                      │── Include chat_routes router          │                    │
+    │                      │                    │                  │                    │
+    │◀─ ✅ Sẵn sàng ──────│                    │                  │                    │
+    │   nhận request       │                    │                  │                    │
 ```
 
 **Lệnh khởi chạy:**
@@ -204,60 +210,72 @@ uvicorn app.__main__:app --reload
 
 ## 6. Luồng Xác Thực (Authentication)
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant R as FastAPI Route
-    participant A as Auth Module
-
-    C->>R: Request + Authorization: Bearer <JWT>
-    R->>A: get_current_principal(credentials)
-    
-    A->>A: jwt.decode(token, RAG_JWT_SECRET,<br/>algorithm=HS256,<br/>issuer=medical-backend,<br/>audience=rag-service)
-    
-    alt Token không hợp lệ
-        A-->>R: ❌ HTTPException 401
-        R-->>C: 401 Invalid RAG token
-    else Token hợp lệ nhưng thiếu scope
-        A->>A: Kiểm tra scope == "rag:chat"
-        A-->>R: ❌ HTTPException 403
-        R-->>C: 403 Missing rag:chat scope
-    else Token hợp lệ
-        A->>A: Tạo RagPrincipal(username, role, scope)
-        A-->>R: ✅ RagPrincipal
-    end
+```
+  Client                  FastAPI Route             Auth Module (auth.py)
+    │                          │                          │
+    │── Request ──────────────▶│                          │
+    │   + Authorization:       │                          │
+    │     Bearer <JWT>         │── get_current_principal()▶│
+    │                          │                          │
+    │                          │                          │── jwt.decode(token,
+    │                          │                          │     RAG_JWT_SECRET,
+    │                          │                          │     algorithm=HS256,
+    │                          │                          │     issuer=medical-backend,
+    │                          │                          │     audience=rag-service)
+    │                          │                          │
+    │                          │                  ┌───────┴───────┐
+    │                          │                  │   Token OK?   │
+    │                          │                  └───┬───────┬───┘
+    │                          │                      │       │
+    │                          │              ❌ Không │       │ ✅ Có
+    │                          │◀─ 401 ───────────────┘       │
+    │◀─ 401 Invalid ──────────│                               │
+    │   RAG token              │                       ┌──────┴──────┐
+    │                          │                       │ scope ==    │
+    │                          │                       │ "rag:chat"? │
+    │                          │                       └──┬──────┬───┘
+    │                          │                   ❌ Không│      │ ✅ Có
+    │                          │◀─ 403 ────────────────────┘      │
+    │◀─ 403 Missing ──────────│                                   │
+    │   rag:chat scope         │                                   │
+    │                          │                    Tạo RagPrincipal│
+    │                          │◀─ ✅ RagPrincipal(username, ──────┘
+    │                          │       role, scope)
 ```
 
 **Cấu trúc JWT Token yêu cầu:**
 
-| Trường | Giá Trị | Mô Tả |
-|--------|---------|-------|
-| `sub` | username | Tên đăng nhập người dùng |
-| `role` | ADMIN / MANAGER / DOCTOR / ENGINEER | Vai trò trong hệ thống |
-| `scope` | `rag:chat` | Quyền truy cập chatbot (bắt buộc) |
-| `iss` | `medical-backend` | Nhà phát hành token |
-| `aud` | `rag-service` | Đối tượng token hướng đến |
+| Trường  | Giá Trị                                  | Mô Tả                              |
+| ------- | ---------------------------------------- | ----------------------------------- |
+| `sub`   | username                                 | Tên đăng nhập người dùng           |
+| `role`  | ADMIN / MANAGER / DOCTOR / ENGINEER      | Vai trò trong hệ thống             |
+| `scope` | `rag:chat`                               | Quyền truy cập chatbot (bắt buộc)  |
+| `iss`   | `medical-backend`                        | Nhà phát hành token                |
+| `aud`   | `rag-service`                            | Đối tượng token hướng đến          |
 
 ---
 
 ## 7. Luồng Tạo Phiên Chat
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant R as POST /sessions
-    participant A as Auth
-    participant SR as session_repository
-    participant DB as MySQL
-
-    C->>R: POST /sessions + Bearer JWT
-    R->>A: Xác thực JWT
-    A-->>R: ✅ RagPrincipal(username, role)
-    R->>SR: create_session(db, user_id, user_role, title="New Chat")
-    SR->>DB: INSERT INTO rag_chat_sessions
-    DB-->>SR: ✅ Session record
-    SR-->>R: ChatSession object
-    R-->>C: 200 OK<br/>{ sessionId, title, createdAt }
+```
+  Client           POST /sessions         Auth           session_repository        MySQL
+    │                    │                  │                    │                    │
+    │── POST /sessions ─▶│                  │                    │                    │
+    │   + Bearer JWT     │── Xác thực JWT ─▶│                    │                    │
+    │                    │◀─ ✅ RagPrincipal│                    │                    │
+    │                    │   (username,role) │                    │                    │
+    │                    │                  │                    │                    │
+    │                    │── create_session(db, user_id, ───────▶│                    │
+    │                    │     user_role, title="New Chat")       │                    │
+    │                    │                  │                    │── INSERT INTO ─────▶│
+    │                    │                  │                    │   rag_chat_sessions │
+    │                    │                  │                    │◀─ ✅ Session ──────│
+    │                    │◀─ ChatSession ───────────────────────│                    │
+    │                    │                  │                    │                    │
+    │◀─ 200 OK ─────────│                  │                    │                    │
+    │   { sessionId,     │                  │                    │                    │
+    │     title,         │                  │                    │                    │
+    │     createdAt }    │                  │                    │                    │
 ```
 
 ---
@@ -266,77 +284,84 @@ sequenceDiagram
 
 Đây là luồng chính khi người dùng gửi tin nhắn qua `POST /stream`. Hệ thống sử dụng mô hình **Intent-based Routing** để định tuyến xử lý.
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant R as POST /stream
-    participant A as Auth
-    participant CS as chat_service
-    participant MR as message_repository
-    participant RS as rag_service<br/>(Dispatcher)
-    participant RT as router_service<br/>(Intent Classifier)
-    participant G as Gemini API
-    participant DB as MySQL
-    participant VDB as ChromaDB
-
-    C->>R: POST /stream<br/>{ sessionId, message } + Bearer JWT
-    R->>A: Xác thực JWT
-    A-->>R: ✅ RagPrincipal
-
-    R->>CS: stream_chat(db, sessionId, message, username, role)
-    
-    Note over CS: Bước 1: Lưu tin nhắn người dùng
-    CS->>MR: save_message(role="user", content=message)
-    MR->>DB: INSERT INTO rag_chat_messages
-    
-    Note over CS: Bước 2: Tải lịch sử hội thoại
-    CS->>MR: get_message_from_session(sessionId)
-    MR->>DB: SELECT * FROM rag_chat_messages WHERE session_id=...
-    DB-->>MR: Danh sách tin nhắn
-    MR-->>CS: history[]
-
-    Note over CS: Bước 3: Gọi Dispatcher trung tâm
-    CS->>RS: ask_question(question, sessionId, history, db, username, role)
-    
-    Note over RS: Bước 3a: Phân loại ý định
-    RS->>RT: classify_intent(question, history)
-    RT->>G: Gemini JSON mode (temperature=0.0)
-    G-->>RT: { "intent": "...", "parameters": {...} }
-    RT-->>RS: intent + params
-    
-    Note over RS: Bước 3b: Xử lý theo Intent (xem chi tiết ở các mục 10-13)
-    
-    alt Q_AND_A
-        RS->>VDB: retriever.ainvoke(search_query)
-        VDB-->>RS: Top-5 documents
-        RS->>RS: Format RAG Prompt + context + question
-    else REPAIR_STATUS
-        RS->>DB: query_repair_status (với RBAC)
-        DB-->>RS: Danh sách phiếu sửa chữa
-        RS->>RS: Format Prompt + db_context
-    else CREATE_REPAIR_REQUEST
-        RS->>DB: query_assets → create_repair_request
-        DB-->>RS: Kết quả tạo phiếu
-        RS->>RS: Format Prompt xác nhận
-    else GENERAL
-        RS->>RS: Format Prompt giới thiệu chatbot
-    end
-
-    Note over RS: Bước 3c: Stream phản hồi từ LLM
-    RS->>G: llm.astream(messages)
-    
-    loop Streaming tokens
-        G-->>RS: chunk.content
-        RS-->>CS: yield token
-        CS-->>C: event: token\ndata: <token>
-    end
-
-    Note over CS: Bước 4: Lưu câu trả lời hoàn chỉnh
-    CS->>MR: save_message(role="assistant", content=full_answer)
-    MR->>DB: INSERT INTO rag_chat_messages
-    
-    Note over CS: Bước 5: Gửi sự kiện hoàn tất
-    CS-->>C: event: done\ndata: <assistant_message_id>
+```
+  Client        POST /stream     Auth      chat_service    message_repo     rag_service      router_service    Gemini API
+    │                │             │             │               │               │                 │               │
+    │── POST /stream▶│             │             │               │               │                 │               │
+    │  {sessionId,   │── Xác thực─▶│             │               │               │                 │               │
+    │   message}     │◀─ ✅ ───────│             │               │               │                 │               │
+    │  + Bearer JWT  │             │             │               │               │                 │               │
+    │                │── stream_chat() ─────────▶│               │               │                 │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │  ┌──────────┴──────────┐    │               │                 │               │
+    │                │             │  │ Bước 1: Lưu tin nhắn│    │               │                 │               │
+    │                │             │  │ người dùng           │    │               │                 │               │
+    │                │             │  └──────────┬──────────┘    │               │                 │               │
+    │                │             │             │── save_message▶│               │                 │               │
+    │                │             │             │  (role="user") │── INSERT ────▶│(MySQL)          │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │  ┌──────────┴──────────┐    │               │                 │               │
+    │                │             │  │ Bước 2: Tải lịch sử │    │               │                 │               │
+    │                │             │  │ hội thoại            │    │               │                 │               │
+    │                │             │  └──────────┬──────────┘    │               │                 │               │
+    │                │             │             │── get_message ▶│               │                 │               │
+    │                │             │             │  _from_session │── SELECT ────▶│(MySQL)          │               │
+    │                │             │             │◀─ history[] ──│               │                 │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │  ┌──────────┴──────────┐    │               │                 │               │
+    │                │             │  │ Bước 3: Gọi         │    │               │                 │               │
+    │                │             │  │ Dispatcher trung tâm │    │               │                 │               │
+    │                │             │  └──────────┬──────────┘    │               │                 │               │
+    │                │             │             │── ask_question(question, sessionId, ────────────▶│               │
+    │                │             │             │     history, db, username, role)                  │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │             │               │  ┌────────────┴────────────┐    │               │
+    │                │             │             │               │  │ Bước 3a: Phân loại      │    │               │
+    │                │             │             │               │  │ ý định                   │    │               │
+    │                │             │             │               │  └────────────┬────────────┘    │               │
+    │                │             │             │               │               │── classify_intent()────────────▶│
+    │                │             │             │               │               │                 │  Gemini JSON  │
+    │                │             │             │               │               │                 │  temperature  │
+    │                │             │             │               │               │                 │  = 0.0        │
+    │                │             │             │               │               │◀─ {intent, parameters} ────────│
+    │                │             │             │               │               │                 │               │
+    │                │             │             │               │  ┌────────────┴────────────┐    │               │
+    │                │             │             │               │  │ Bước 3b: Xử lý theo    │    │               │
+    │                │             │             │               │  │ Intent (xem mục 10-13)  │    │               │
+    │                │             │             │               │  └────────────┬────────────┘    │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │             │               │               │ (Tùy intent:    │               │
+    │                │             │             │               │               │  Q_AND_A → ChromaDB             │
+    │                │             │             │               │               │  REPAIR_STATUS → MySQL + RBAC   │
+    │                │             │             │               │               │  CREATE_REPAIR_REQUEST → MySQL  │
+    │                │             │             │               │               │  GENERAL → Prompt trực tiếp)    │
+    │                │             │             │               │               │                 │               │
+    │                │             │             │               │  ┌────────────┴────────────┐    │               │
+    │                │             │             │               │  │ Bước 3c: Stream phản hồi│    │               │
+    │                │             │             │               │  │ từ LLM                   │    │               │
+    │                │             │             │               │  └────────────┬────────────┘    │               │
+    │                │             │             │               │               │── llm.astream(messages) ───────▶│
+    │                │             │             │               │               │                 │               │
+    │                │             │             │               │    ┌──── loop: Streaming tokens ────┐           │
+    │                │             │             │               │    │          │◀─ chunk.content ────│           │
+    │                │             │◀─ yield token ─────────────│    │          │                 │   │           │
+    │◀─ event:token ─│             │             │               │    └─────────────────────────────────┘           │
+    │   data:<token>  │             │             │               │               │                 │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │  ┌──────────┴──────────┐    │               │                 │               │
+    │                │             │  │ Bước 4: Lưu câu     │    │               │                 │               │
+    │                │             │  │ trả lời hoàn chỉnh   │    │               │                 │               │
+    │                │             │  └──────────┬──────────┘    │               │                 │               │
+    │                │             │             │── save_message▶│               │                 │               │
+    │                │             │             │(role="assistant"│── INSERT ───▶│(MySQL)          │               │
+    │                │             │             │ content=full)  │               │                 │               │
+    │                │             │             │               │               │                 │               │
+    │                │             │  ┌──────────┴──────────┐    │               │                 │               │
+    │                │             │  │ Bước 5: Gửi sự kiện │    │               │                 │               │
+    │                │             │  │ hoàn tất             │    │               │                 │               │
+    │                │             │  └──────────┬──────────┘    │               │                 │               │
+    │◀─ event:done ──│             │             │               │               │                 │               │
+    │   data:<msg_id> │             │             │               │               │                 │               │
 ```
 
 ---
@@ -345,31 +370,35 @@ sequenceDiagram
 
 Hệ thống sử dụng **Gemini LLM ở chế độ JSON** (`response_mime_type="application/json"`, `temperature=0.0`) để phân loại ý định với độ chính xác cao.
 
-```mermaid
-graph TD
-    INPUT["📩 Tin nhắn người dùng"]
-    
-    CLASSIFIER["🤖 Gemini Intent Classifier<br/>temperature=0.0<br/>JSON output mode"]
-    
-    INPUT --> CLASSIFIER
-    
-    CLASSIFIER -->|"Hỏi quy trình,<br/>hướng dẫn kỹ thuật"| QA["📚 Q_AND_A<br/>params: search_query"]
-    CLASSIFIER -->|"Hỏi tiến độ<br/>sửa chữa"| RS["🔍 REPAIR_STATUS<br/>params: query_term"]
-    CLASSIFIER -->|"Báo hỏng<br/>thiết bị"| CR["🛠️ CREATE_REPAIR_REQUEST<br/>params: asset_name, description"]
-    CLASSIFIER -->|"Chào hỏi,<br/>chat tự do"| GN["💬 GENERAL<br/>params: {}"]
-
-    QA --> DISPATCH["⚡ rag_service.py<br/>Dispatcher xử lý"]
-    RS --> DISPATCH
-    CR --> DISPATCH
-    GN --> DISPATCH
-
-    style INPUT fill:#e94560,stroke:#1a1a2e,color:#fff
-    style CLASSIFIER fill:#533483,stroke:#1a1a2e,color:#fff
-    style QA fill:#0f3460,stroke:#1a1a2e,color:#fff
-    style RS fill:#0f3460,stroke:#1a1a2e,color:#fff
-    style CR fill:#0f3460,stroke:#1a1a2e,color:#fff
-    style GN fill:#0f3460,stroke:#1a1a2e,color:#fff
-    style DISPATCH fill:#16213e,stroke:#e94560,color:#fff
+```
+                        ┌─────────────────────┐
+                        │  📩 Tin nhắn         │
+                        │  người dùng          │
+                        └──────────┬──────────┘
+                                   │
+                                   ▼
+                  ┌────────────────────────────────┐
+                  │  🤖 Gemini Intent Classifier   │
+                  │  temperature = 0.0             │
+                  │  response_mime_type = JSON      │
+                  └──┬─────────┬─────────┬──────┬──┘
+                     │         │         │      │
+        ┌────────────┘         │         │      └────────────┐
+        ▼                      ▼         ▼                   ▼
+ ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐  ┌──────────────┐
+ │ 📚 Q_AND_A   │  │ 🔍 REPAIR_  │  │ 🛠️ CREATE_REPAIR_ │  │ 💬 GENERAL   │
+ │              │  │    STATUS    │  │    REQUEST        │  │              │
+ │ params:      │  │ params:      │  │ params:           │  │ params: {}   │
+ │ search_query │  │ query_term   │  │ asset_name,       │  │              │
+ │              │  │              │  │ description       │  │              │
+ └──────┬───────┘  └──────┬───────┘  └─────────┬─────────┘  └──────┬───────┘
+        │                 │                    │                   │
+        └────────┬────────┴────────┬───────────┘                   │
+                 │                 │                               │
+                 ▼                 ▼                               ▼
+        ┌──────────────────────────────────────────────────────────────┐
+        │              ⚡ rag_service.py — Dispatcher xử lý           │
+        └──────────────────────────────────────────────────────────────┘
 ```
 
 ### System Prompt cho Intent Classifier
@@ -385,60 +414,69 @@ Classifier nhận một `SystemMessage` mô tả chi tiết 4 nhóm intent và �
 
 ### Ví dụ phân loại:
 
-| Tin nhắn | Intent | Parameters |
-|----------|--------|------------|
-| "Cách sửa lỗi E01 máy thở?" | `Q_AND_A` | `{"search_query": "lỗi E01 máy thở"}` |
-| "Phiếu sửa chữa số 12 thế nào?" | `REPAIR_STATUS` | `{"query_term": "12"}` |
-| "Báo hỏng máy ECG bị chập nguồn" | `CREATE_REPAIR_REQUEST` | `{"asset_name": "máy ECG", "description": "chập nguồn"}` |
-| "Chào bạn" | `GENERAL` | `{}` |
+| Tin nhắn                             | Intent                  | Parameters                                                       |
+| ------------------------------------ | ----------------------- | ---------------------------------------------------------------- |
+| "Cách sửa lỗi E01 máy thở?"        | `Q_AND_A`               | `{"search_query": "lỗi E01 máy thở"}`                           |
+| "Phiếu sửa chữa số 12 thế nào?"    | `REPAIR_STATUS`         | `{"query_term": "12"}`                                           |
+| "Báo hỏng máy ECG bị chập nguồn"   | `CREATE_REPAIR_REQUEST` | `{"asset_name": "máy ECG", "description": "chập nguồn"}`        |
+| "Chào bạn"                          | `GENERAL`               | `{}`                                                             |
 
 ---
 
-## 10. Luồng RAG - Hỏi Đáp Quy Trình (Q_AND_A)
+## 10. Luồng RAG — Hỏi Đáp Quy Trình (Q_AND_A)
 
 Đây là luồng **RAG thực thụ** — truy xuất tài liệu từ ChromaDB rồi đưa vào prompt cho LLM.
 
-```mermaid
-sequenceDiagram
-    participant RS as rag_service<br/>(Dispatcher)
-    participant RET as retriever_service<br/>(ChromaDB)
-    participant EMB as Embedding Model<br/>(all-MiniLM-L6-v2)
-    participant VDB as ChromaDB<br/>(vector_db/)
-    participant LLM as Gemini LLM
-
-    Note over RS: Intent = Q_AND_A<br/>params.search_query = "lỗi E01 máy thở"
-    
-    RS->>RET: retriever.ainvoke(search_query)
-    RET->>EMB: Encode search_query → vector
-    EMB-->>RET: query embedding [384-dim]
-    RET->>VDB: Similarity search (top-k=5)
-    VDB-->>RET: 5 tài liệu có điểm tương đồng cao nhất
-    RET-->>RS: docs[]
-
-    Note over RS: Xây dựng RAG Prompt
-    RS->>RS: context_str = join(doc.page_content for doc in docs)
-    RS->>RS: RAG_PROMPT.format(context=context_str, question=question)
-    RS->>RS: Thêm vào messages[] (history + formatted prompt)
-
-    RS->>LLM: llm.astream(messages)
-    
-    loop Stream tokens
-        LLM-->>RS: chunk.content
-        RS-->>RS: yield token
-    end
+```
+  rag_service          retriever_service       Embedding Model          ChromaDB            Gemini LLM
+  (Dispatcher)         (ChromaDB)             (all-MiniLM-L6-v2)      (vector_db/)
+    │                       │                       │                      │                    │
+    │ Intent = Q_AND_A      │                       │                      │                    │
+    │ search_query =        │                       │                      │                    │
+    │ "lỗi E01 máy thở"    │                       │                      │                    │
+    │                       │                       │                      │                    │
+    │── retriever.ainvoke()▶│                       │                      │                    │
+    │   (search_query)      │── Encode query ──────▶│                      │                    │
+    │                       │                       │── query embedding    │                    │
+    │                       │                       │   [384-dim]          │                    │
+    │                       │◀──────────────────────│                      │                    │
+    │                       │                       │                      │                    │
+    │                       │── Similarity search ─────────────────────────▶│                    │
+    │                       │   (top-k=5)           │                      │                    │
+    │                       │◀─ 5 tài liệu tương đồng cao nhất ───────────│                    │
+    │                       │                       │                      │                    │
+    │◀─ docs[] ────────────│                       │                      │                    │
+    │                       │                       │                      │                    │
+    │ ┌─────────────────────────────────────────┐   │                      │                    │
+    │ │ Xây dựng RAG Prompt:                    │   │                      │                    │
+    │ │ 1. context_str = join(doc.page_content) │   │                      │                    │
+    │ │ 2. RAG_PROMPT.format(context, question) │   │                      │                    │
+    │ │ 3. Thêm vào messages[] (history +       │   │                      │                    │
+    │ │    formatted prompt)                    │   │                      │                    │
+    │ └─────────────────────────────────────────┘   │                      │                    │
+    │                       │                       │                      │                    │
+    │── llm.astream(messages) ─────────────────────────────────────────────────────────────────▶│
+    │                       │                       │                      │                    │
+    │              ┌──── loop: Stream tokens ──────────────────────────────────────────┐        │
+    │              │        │                       │                      │           │        │
+    │◀─ chunk.content ─────────────────────────────────────────────────────────────────│───────│
+    │   yield token │        │                       │                      │           │        │
+    │              └──────────────────────────────────────────────────────────────────────┘      │
 ```
 
 ### RAG Prompt Template (`app/core/prompt.py`):
 
 ```
-Bạn là chatbot AI cho hệ thống quản lí, bảo trì thiết bị y tế.
-Nhiệm vụ: trả lời dựa hoàn toàn vào ngữ cảnh được cung cấp.
+Bạn là chatbot AI cho hệ thống quản lí, bảo trì, theo dõi và sửa sữa thiết bị y tế.
+Bạn là một trợ lý ảo thông minh và thân thiện.
+Nhiệm vụ của bạn là trả lời các câu hỏi của người dùng dựa hoàn toàn vào các ngữ cảnh được cung cấp bên dưới
 
-QUY TẮC:
-1) Chính xác tuyệt đối - chỉ dùng thông tin trong NGỮ CẢNH
-2) Thành thật - nếu không có đủ thông tin, nói rõ
-3) Ngắn gọn, rõ ràng - dùng bullet points
-4) Giọng điệu chuyên nghiệp, lịch sự
+QUY TẮC TRẢ LỜI:
+1) Chính xác tuyệt đối: Chỉ sử dụng thông tin trong phần NGỮ CẢNH. Không tự bịa thông tin hoặc dùng kiến thức ngoài.
+2) Lưu ý lịch sử hỏi đáp để phục vụ cho phần "Câu hỏi"
+2) Thành thật: Nếu ngữ cảnh không có đủ thông tin để trả lời câu hỏi, hãy nói rõ.
+3) Ngắn gọn, rõ ràng: Trả lời trực tiếp vào vấn đề. Sử dụng danh sách (bullet points).
+4) Giọng điệu: Thể hiện sự chuyên nghiệp, lịch sự và hữu ích.
 
 Ngữ cảnh: {context}
 Câu hỏi: {question}
@@ -450,44 +488,65 @@ Câu hỏi: {question}
 
 Luồng này truy vấn **trực tiếp MySQL** với bộ lọc bảo mật **RBAC** dựa trên vai trò người dùng.
 
-```mermaid
-sequenceDiagram
-    participant RS as rag_service
-    participant DQ as db_query_service
-    participant DB as MySQL
-    participant LLM as Gemini LLM
-
-    Note over RS: Intent = REPAIR_STATUS<br/>params.query_term = "máy siêu âm"
-
-    RS->>DQ: query_repair_status(db, query_term, username, user_role)
-    
-    Note over DQ: Bước 1: Xác định user_id
-    DQ->>DB: SELECT id FROM users WHERE username = :username
-    DB-->>DQ: user_id
-
-    Note over DQ: Bước 2: Xây dựng truy vấn có RBAC
-    DQ->>DQ: Áp dụng bộ lọc theo vai trò
-
-    alt DOCTOR
-        DQ->>DQ: WHERE sr.reported_by_id = user_id<br/>(Chỉ xem phiếu mình tạo)
-    else ENGINEER
-        DQ->>DQ: WHERE sr.assigned_engineer_id = user_id<br/>(Chỉ xem phiếu được giao)
-    else ADMIN / MANAGER
-        DQ->>DQ: Không lọc (xem toàn bộ)
-    end
-
-    DQ->>DB: SELECT sr.*, a.name, a.code, u.username<br/>FROM service_requests sr<br/>JOIN assets a ... JOIN users u ...<br/>WHERE [search_filter] AND [rbac_filter]
-    DB-->>DQ: rows[]
-    DQ-->>RS: records[]
-
-    Note over RS: Format kết quả thành prompt
-    RS->>RS: Tạo prompt mô tả từng phiếu sửa chữa<br/>(mã phiếu, thiết bị, trạng thái, ưu tiên, ...)
-    RS->>RS: Thêm HumanMessage(prompt) vào messages[]
-
-    RS->>LLM: llm.astream(messages)
-    loop Stream tokens
-        LLM-->>RS: chunk.content (phản hồi tự nhiên bằng tiếng Việt)
-    end
+```
+  rag_service           db_query_service                  MySQL                     Gemini LLM
+    │                        │                              │                           │
+    │ Intent = REPAIR_STATUS │                              │                           │
+    │ query_term =           │                              │                           │
+    │ "máy siêu âm"         │                              │                           │
+    │                        │                              │                           │
+    │── query_repair_status()▶│                              │                           │
+    │   (db, query_term,     │                              │                           │
+    │    username, user_role)│                              │                           │
+    │                        │                              │                           │
+    │                        │ ┌──────────────────────┐     │                           │
+    │                        │ │ Bước 1: Xác định     │     │                           │
+    │                        │ │ user_id               │     │                           │
+    │                        │ └──────────┬───────────┘     │                           │
+    │                        │            │                  │                           │
+    │                        │── SELECT id FROM users ──────▶│                           │
+    │                        │   WHERE username = :username  │                           │
+    │                        │◀─ user_id ───────────────────│                           │
+    │                        │                              │                           │
+    │                        │ ┌──────────────────────┐     │                           │
+    │                        │ │ Bước 2: Xây dựng     │     │                           │
+    │                        │ │ truy vấn có RBAC     │     │                           │
+    │                        │ └──────────┬───────────┘     │                           │
+    │                        │            │                  │                           │
+    │                        │   ┌────────┴────────┐        │                           │
+    │                        │   │ Vai trò?        │        │                           │
+    │                        │   └─┬──────┬──────┬─┘        │                           │
+    │                        │     │      │      │          │                           │
+    │                        │  DOCTOR  ENGINEER  ADMIN/     │                           │
+    │                        │     │      │     MANAGER     │                           │
+    │                        │     ▼      ▼      ▼          │                           │
+    │                        │  WHERE   WHERE   Không       │                           │
+    │                        │  reported assigned lọc       │                           │
+    │                        │  _by_id  _engineer           │                           │
+    │                        │  =user_id _id=               │                           │
+    │                        │          user_id             │                           │
+    │                        │                              │                           │
+    │                        │── SELECT sr.*, a.name, ... ─▶│                           │
+    │                        │   FROM service_requests sr    │                           │
+    │                        │   JOIN assets a ...           │                           │
+    │                        │   JOIN users u ...            │                           │
+    │                        │   WHERE [search] AND [rbac]  │                           │
+    │                        │   ORDER BY sr.created_at DESC│                           │
+    │                        │◀─ rows[] ───────────────────│                           │
+    │◀─ records[] ──────────│                              │                           │
+    │                        │                              │                           │
+    │ ┌────────────────────────────────────────────┐        │                           │
+    │ │ Format kết quả thành prompt:               │        │                           │
+    │ │ - Mã phiếu, thiết bị, trạng thái,         │        │                           │
+    │ │   ưu tiên, người báo, ngày báo, ...        │        │                           │
+    │ │ Thêm HumanMessage(prompt) vào messages[]   │        │                           │
+    │ └────────────────────────────────────────────┘        │                           │
+    │                        │                              │                           │
+    │── llm.astream(messages) ──────────────────────────────────────────────────────────▶│
+    │                        │                              │                           │
+    │     ┌── loop: Stream tokens ──────────────────────────────────────────────┐       │
+    │◀────│── chunk.content (phản hồi tự nhiên bằng tiếng Việt) ───────────────│──────│
+    │     └─────────────────────────────────────────────────────────────────────┘       │
 ```
 
 ---
@@ -496,66 +555,99 @@ sequenceDiagram
 
 Luồng phức tạp nhất — bao gồm nhiều bước xác nhận trước khi tạo phiếu trong database.
 
-```mermaid
-flowchart TD
-    START["📩 Intent = CREATE_REPAIR_REQUEST<br/>params: asset_name, description"]
-    
-    CHECK_INFO{"Đủ thông tin?<br/>asset_name AND description<br/>không rỗng?"}
-    
-    START --> CHECK_INFO
-    
-    CHECK_INFO -->|"❌ Thiếu thông tin"| ASK_MORE["🔄 Yêu cầu người dùng<br/>bổ sung thông tin:<br/>1. Tên/Mã thiết bị<br/>2. Mô tả sự cố"]
-    
-    CHECK_INFO -->|"✅ Đủ thông tin"| QUERY_ASSET["🔍 query_assets(db, asset_name)<br/>Tìm thiết bị trong MySQL"]
-    
-    QUERY_ASSET --> CHECK_RESULT{"Kết quả<br/>tìm kiếm?"}
-    
-    CHECK_RESULT -->|"0 kết quả"| NOT_FOUND["❌ Không tìm thấy thiết bị<br/>Gợi ý kiểm tra lại<br/>mã máy/tên thiết bị"]
-    
-    CHECK_RESULT -->|"> 1 kết quả"| MULTI["📋 Hiển thị danh sách<br/>thiết bị trùng khớp<br/>Yêu cầu chọn chính xác<br/>Mã thiết bị (Code)"]
-    
-    CHECK_RESULT -->|"= 1 kết quả"| CREATE["✅ create_repair_request()"]
-    
-    CREATE --> INSERT_SR["INSERT INTO service_requests<br/>(status=PENDING, priority=LOW)"]
-    INSERT_SR --> UPDATE_ASSET["UPDATE assets<br/>SET status = 'BROKEN'"]
-    UPDATE_ASSET --> COMMIT["COMMIT transaction"]
-    
-    COMMIT --> SUCCESS{"Thành công?"}
-    
-    SUCCESS -->|"✅"| CONFIRM["🎉 Xác nhận tạo phiếu<br/>Thông tin: mã phiếu, thiết bị,<br/>trạng thái, mô tả sự cố"]
-    
-    SUCCESS -->|"❌ Exception"| ERROR["⚠️ Thông báo lỗi<br/>ROLLBACK transaction<br/>Hướng dẫn thử lại"]
-
-    ASK_MORE --> LLM["🤖 Gemini Stream Response"]
-    NOT_FOUND --> LLM
-    MULTI --> LLM
-    CONFIRM --> LLM
-    ERROR --> LLM
-
-    style START fill:#e94560,stroke:#1a1a2e,color:#fff
-    style CREATE fill:#2ecc71,stroke:#1a1a2e,color:#fff
-    style ERROR fill:#e74c3c,stroke:#1a1a2e,color:#fff
-    style LLM fill:#533483,stroke:#1a1a2e,color:#fff
+```
+         ┌─────────────────────────────────────┐
+         │ 📩 Intent = CREATE_REPAIR_REQUEST   │
+         │ params: asset_name, description     │
+         └──────────────────┬──────────────────┘
+                            │
+                            ▼
+                  ┌─────────────────────┐
+                  │ Đủ thông tin?       │
+                  │ asset_name AND      │
+                  │ description != rỗng │
+                  └──┬──────────────┬───┘
+                     │              │
+              ❌ Thiếu            ✅ Đủ
+                     │              │
+                     ▼              ▼
+          ┌──────────────┐  ┌──────────────────────────┐
+          │ 🔄 Yêu cầu  │  │ 🔍 query_assets(db,      │
+          │ bổ sung:     │  │    asset_name)            │
+          │ 1. Tên/Mã    │  │ Tìm thiết bị trong MySQL │
+          │    thiết bị  │  └────────────┬─────────────┘
+          │ 2. Mô tả     │               │
+          │    sự cố     │               ▼
+          └──────┬───────┘     ┌─────────────────┐
+                 │             │ Kết quả tìm     │
+                 │             │ kiếm?           │
+                 │             └──┬──────┬────┬──┘
+                 │                │      │    │
+                 │          0 kết quả  >1    =1
+                 │                │      │    │
+                 │                ▼      ▼    ▼
+                 │     ┌──────────┐ ┌──────┐ ┌──────────────────────────────┐
+                 │     │❌ Không  │ │📋 DS │ │ ✅ create_repair_request()   │
+                 │     │tìm thấy │ │nhiều │ │                              │
+                 │     │Gợi ý    │ │thiết │ │ 1. INSERT INTO               │
+                 │     │kiểm tra │ │bị    │ │    service_requests          │
+                 │     │lại mã   │ │Yêu   │ │    (status=PENDING,          │
+                 │     │máy      │ │cầu   │ │     priority=LOW)            │
+                 │     │         │ │chọn  │ │                              │
+                 │     │         │ │chính │ │ 2. UPDATE assets             │
+                 │     │         │ │xác   │ │    SET status='BROKEN'       │
+                 │     │         │ │Code  │ │                              │
+                 │     └────┬────┘ └──┬───┘ │ 3. COMMIT transaction        │
+                 │          │         │     └──────────┬───────────────────┘
+                 │          │         │                │
+                 │          │         │         ┌──────┴──────┐
+                 │          │         │         │ Thành công? │
+                 │          │         │         └──┬───────┬──┘
+                 │          │         │            │       │
+                 │          │         │         ✅ OK    ❌ Lỗi
+                 │          │         │            │       │
+                 │          │         │            ▼       ▼
+                 │          │         │    ┌─────────┐ ┌──────────────┐
+                 │          │         │    │🎉 Xác   │ │⚠️ Thông báo │
+                 │          │         │    │nhận tạo │ │lỗi           │
+                 │          │         │    │phiếu:   │ │ROLLBACK      │
+                 │          │         │    │mã phiếu,│ │Hướng dẫn     │
+                 │          │         │    │thiết bị,│ │thử lại       │
+                 │          │         │    │trạng    │ └──────┬───────┘
+                 │          │         │    │thái     │        │
+                 │          │         │    └────┬────┘        │
+                 │          │         │         │             │
+                 ▼          ▼         ▼         ▼             ▼
+          ┌────────────────────────────────────────────────────────┐
+          │           🤖 Gemini Stream Response                   │
+          │           (Phản hồi bằng tiếng Việt)                  │
+          └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 13. Luồng Chat Tự Do (GENERAL)
 
-```mermaid
-sequenceDiagram
-    participant RS as rag_service
-    participant LLM as Gemini LLM
-
-    Note over RS: Intent = GENERAL<br/>(chào hỏi, hỏi chức năng, chat tự do)
-
-    RS->>RS: Tạo System Prompt giới thiệu chatbot:<br/>1. Hỏi đáp quy trình kỹ thuật (RAG)<br/>2. Tra cứu trạng thái sửa chữa<br/>3. Báo hỏng thiết bị qua chat
-    RS->>RS: Thêm HumanMessage vào messages[]
-
-    RS->>LLM: llm.astream(messages)
-    loop Stream tokens
-        LLM-->>RS: chunk.content
-    end
+```
+  rag_service                                              Gemini LLM
+    │                                                          │
+    │ Intent = GENERAL                                         │
+    │ (chào hỏi, hỏi chức năng, chat tự do)                  │
+    │                                                          │
+    │ ┌──────────────────────────────────────────────┐         │
+    │ │ Tạo System Prompt giới thiệu chatbot:       │         │
+    │ │ 1. Hỏi đáp quy trình kỹ thuật (RAG)        │         │
+    │ │ 2. Tra cứu trạng thái sửa chữa             │         │
+    │ │ 3. Báo hỏng thiết bị qua chat              │         │
+    │ │                                              │         │
+    │ │ Thêm HumanMessage vào messages[]             │         │
+    │ └──────────────────────────────────────────────┘         │
+    │                                                          │
+    │── llm.astream(messages) ────────────────────────────────▶│
+    │                                                          │
+    │     ┌── loop: Stream tokens ────────────────────┐        │
+    │◀────│── chunk.content ──────────────────────────│───────│
+    │     └───────────────────────────────────────────┘        │
 ```
 
 ---
@@ -564,34 +656,22 @@ sequenceDiagram
 
 Luồng **offline** — chạy một lần để nạp dữ liệu CSV vào ChromaDB trước khi sử dụng RAG.
 
-```mermaid
-flowchart LR
-    subgraph SOURCE["📄 Nguồn Dữ Liệu CSV"]
-        CSV1["failure-QA-data.csv<br/>Hỏi đáp lỗi thiết bị"]
-        CSV2["system-guide-data.csv<br/>Hướng dẫn hệ thống"]
-    end
-
-    subgraph PROCESS["⚙️ scripts/ingest_csv.py"]
-        LOAD["CSVLoader<br/>Đọc CSV (UTF-8)"]
-        PARSE["Tách question/answer<br/>từ page_content"]
-        FORMAT["Tạo Document:<br/>page_content: Q&A<br/>metadata: source, language=vi"]
-    end
-
-    subgraph STORE["💾 Vector Store"]
-        EMB["HuggingFace Embeddings<br/>all-MiniLM-L6-v2"]
-        CHROMA["ChromaDB<br/>./vector_db/"]
-    end
-
-    CSV1 --> LOAD
-    CSV2 --> LOAD
-    LOAD --> PARSE
-    PARSE --> FORMAT
-    FORMAT --> EMB
-    EMB -->|"vector_store.add_documents()"| CHROMA
-
-    style SOURCE fill:#1a1a2e,stroke:#e94560,color:#fff
-    style PROCESS fill:#16213e,stroke:#0f3460,color:#fff
-    style STORE fill:#0f3460,stroke:#533483,color:#fff
+```
+  ┌─────────────────────────┐       ┌──────────────────────────────┐       ┌──────────────────────┐
+  │ 📄 NGUỒN DỮ LIỆU CSV   │       │ ⚙️ scripts/ingest_csv.py     │       │ 💾 VECTOR STORE      │
+  │                         │       │                              │       │                      │
+  │ failure-QA-data.csv     │──────▶│ 1. CSVLoader (UTF-8)         │       │ HuggingFace          │
+  │ (Hỏi đáp lỗi thiết bị) │       │    Đọc từng file CSV         │       │ Embeddings           │
+  │                         │       │                              │       │ all-MiniLM-L6-v2     │
+  │ system-guide-data.csv   │──────▶│ 2. Tách question/answer      │──────▶│                      │
+  │ (Hướng dẫn hệ thống)   │       │    từ page_content           │       │         │            │
+  │                         │       │                              │       │         ▼            │
+  └─────────────────────────┘       │ 3. Tạo Document:             │       │ ChromaDB             │
+                                    │    page_content: Q&A         │       │ ./vector_db/         │
+                                    │    metadata:                 │       │ (vector_store        │
+                                    │      source, language=vi     │       │  .add_documents())   │
+                                    │                              │       │                      │
+                                    └──────────────────────────────┘       └──────────────────────┘
 ```
 
 **Lệnh chạy nạp dữ liệu:**
@@ -612,56 +692,49 @@ answer: Kiểm tra nguồn điện, reset hệ thống, ...
 
 ### Sơ đồ ERD (Bảng liên quan đến RAG Chatbot)
 
-```mermaid
-erDiagram
-    rag_chat_sessions {
-        string id PK "UUID"
-        string user_id "Username người tạo"
-        string user_role "Vai trò: ADMIN/DOCTOR/..."
-        string title "Tiêu đề phiên chat"
-        datetime created_at
-        datetime updated_at
-    }
-
-    rag_chat_messages {
-        string id PK "UUID"
-        string session_id FK "→ rag_chat_sessions.id"
-        string role "user | assistant"
-        text content "Nội dung tin nhắn"
-        json metadata_json "Metadata tùy chọn"
-        datetime created_at
-    }
-
-    users {
-        int id PK
-        string username
-        string role "ADMIN | MANAGER | DOCTOR | ENGINEER"
-    }
-
-    assets {
-        int id PK
-        string code "Mã thiết bị"
-        string name "Tên thiết bị"
-        string status "ACTIVE | BROKEN | ..."
-    }
-
-    service_requests {
-        int id PK
-        int asset_id FK "→ assets.id"
-        int reported_by_id FK "→ users.id"
-        int assigned_engineer_id FK "→ users.id"
-        text description "Mô tả sự cố"
-        string status "PENDING | IN_PROGRESS | COMPLETED"
-        string priority "LOW | MEDIUM | HIGH"
-        datetime created_at
-        datetime completed_at
-    }
-
-    rag_chat_sessions ||--o{ rag_chat_messages : "chứa"
-    users ||--o{ service_requests : "báo hỏng"
-    users ||--o{ service_requests : "được giao"
-    assets ||--o{ service_requests : "liên quan"
 ```
+  ┌─────────────────────────────────────┐          ┌─────────────────────────────────────────┐
+  │         rag_chat_sessions           │          │           rag_chat_messages              │
+  ├─────────────────────────────────────┤          ├─────────────────────────────────────────┤
+  │ PK  id           VARCHAR(36) UUID   │──── 1:N ─▶│ PK  id            VARCHAR(36) UUID      │
+  │     user_id      VARCHAR(255)       │          │ FK  session_id    → rag_chat_sessions.id │
+  │     user_role    VARCHAR(50)        │          │     role          VARCHAR(50)            │
+  │     title        VARCHAR(255)       │          │                   "user" | "assistant"   │
+  │     created_at   DATETIME           │          │     content       TEXT                   │
+  │     updated_at   DATETIME           │          │     metadata_json JSON (nullable)        │
+  └─────────────────────────────────────┘          │     created_at    DATETIME               │
+                                                   └─────────────────────────────────────────┘
+
+
+  ┌──────────────────────────────┐         ┌──────────────────────────────────────────────────┐
+  │           users              │         │              service_requests                     │
+  ├──────────────────────────────┤         ├──────────────────────────────────────────────────┤
+  │ PK  id        INT            │──┐      │ PK  id                   INT                     │
+  │     username  VARCHAR        │  │      │ FK  asset_id             → assets.id              │
+  │     role      VARCHAR        │  ├─ 1:N▶│ FK  reported_by_id       → users.id               │
+  │               ADMIN |        │  │      │ FK  assigned_engineer_id → users.id               │
+  │               MANAGER |      │  │      │     description          TEXT                     │
+  │               DOCTOR |       │  └─ 1:N▶│     status               PENDING | IN_PROGRESS   │
+  │               ENGINEER       │         │                          | COMPLETED              │
+  └──────────────────────────────┘         │     priority             LOW | MEDIUM | HIGH      │
+                                           │     created_at           DATETIME                 │
+  ┌──────────────────────────────┐         │     completed_at         DATETIME (nullable)      │
+  │           assets             │         └──────────────────────────────────────────────────┘
+  ├──────────────────────────────┤                  ▲
+  │ PK  id      INT              │──────── 1:N ─────┘
+  │     code    VARCHAR          │
+  │     name    VARCHAR          │
+  │     status  ACTIVE | BROKEN  │
+  │             | ...            │
+  └──────────────────────────────┘
+```
+
+### Quan hệ:
+
+- `rag_chat_sessions` **1 : N** `rag_chat_messages` (một phiên chứa nhiều tin nhắn)
+- `users` **1 : N** `service_requests` (người dùng báo hỏng nhiều phiếu)
+- `users` **1 : N** `service_requests` (kỹ thuật viên được giao nhiều phiếu)
+- `assets` **1 : N** `service_requests` (một thiết bị có nhiều phiếu sửa chữa)
 
 ---
 
@@ -675,108 +748,133 @@ Hệ thống áp dụng **Role-Based Access Control** ở 2 tầng:
 
 ### Tầng 2: Database Query Filtering (Data Layer)
 
-```mermaid
-graph TD
-    REQ["🔍 Truy vấn phiếu sửa chữa"]
-    
-    REQ --> ROLE{"Vai trò<br/>người dùng?"}
-    
-    ROLE -->|DOCTOR| DOC["👨‍⚕️ DOCTOR<br/>Chỉ xem phiếu MÌNH TẠO<br/>WHERE reported_by_id = user_id"]
-    ROLE -->|ENGINEER| ENG["🔧 ENGINEER<br/>Chỉ xem phiếu ĐƯỢC GIAO<br/>WHERE assigned_engineer_id = user_id"]
-    ROLE -->|ADMIN| ADM["👑 ADMIN<br/>Xem TOÀN BỘ phiếu<br/>Không lọc"]
-    ROLE -->|MANAGER| MGR["📊 MANAGER<br/>Xem TOÀN BỘ phiếu<br/>Không lọc"]
-
-    style DOC fill:#3498db,stroke:#1a1a2e,color:#fff
-    style ENG fill:#e67e22,stroke:#1a1a2e,color:#fff
-    style ADM fill:#e94560,stroke:#1a1a2e,color:#fff
-    style MGR fill:#2ecc71,stroke:#1a1a2e,color:#fff
+```
+                        ┌─────────────────────┐
+                        │ 🔍 Truy vấn phiếu   │
+                        │ sửa chữa            │
+                        └──────────┬──────────┘
+                                   │
+                                   ▼
+                        ┌─────────────────────┐
+                        │   Vai trò           │
+                        │   người dùng?       │
+                        └──┬────┬────┬────┬───┘
+                           │    │    │    │
+                  DOCTOR   │    │    │    │ MANAGER
+                           │    │    │    │
+                           ▼    │    │    ▼
+              ┌──────────────┐  │    │  ┌──────────────┐
+              │ 👨‍⚕️ DOCTOR    │  │    │  │ 📊 MANAGER   │
+              │ Chỉ xem phiếu│  │    │  │ Xem TOÀN BỘ │
+              │ MÌNH TẠO     │  │    │  │ phiếu        │
+              │ WHERE         │  │    │  │ Không lọc    │
+              │ reported_by_id│  │    │  └──────────────┘
+              │ = user_id     │  │    │
+              └──────────────┘  │    │
+                         ENGINEER    ADMIN
+                                │    │
+                                ▼    ▼
+              ┌──────────────┐  ┌──────────────┐
+              │ 🔧 ENGINEER  │  │ 👑 ADMIN     │
+              │ Chỉ xem phiếu│  │ Xem TOÀN BỘ │
+              │ ĐƯỢC GIAO    │  │ phiếu        │
+              │ WHERE         │  │ Không lọc    │
+              │ assigned_     │  └──────────────┘
+              │ engineer_id   │
+              │ = user_id     │
+              └──────────────┘
 ```
 
 ---
 
 ## 17. Biến Môi Trường
 
-| Biến | Bắt Buộc | Giá Trị Mặc Định | Mô Tả |
-|------|----------|-------------------|--------|
-| `GOOGLE_API_KEY` | ✅ | — | API key Google Gemini |
-| `RAG_JWT_SECRET` | ✅ | — | Secret key mã hóa JWT |
-| `RAG_JWT_ISSUER` | ❌ | `medical-backend` | Nhà phát hành JWT |
-| `RAG_JWT_AUDIENCE` | ❌ | `rag-service` | Đối tượng JWT |
-| `DATABASE_URL` | ✅ | Hard-coded | Connection string MySQL |
+| Biến               | Bắt Buộc | Giá Trị Mặc Định | Mô Tả                     |
+| ------------------- | -------- | ----------------- | -------------------------- |
+| `GOOGLE_API_KEY`    | ✅        | —                 | API key Google Gemini      |
+| `RAG_JWT_SECRET`    | ✅        | —                 | Secret key mã hóa JWT     |
+| `RAG_JWT_ISSUER`    | ❌        | `medical-backend` | Nhà phát hành JWT          |
+| `RAG_JWT_AUDIENCE`  | ❌        | `rag-service`     | Đối tượng JWT              |
+| `DATABASE_URL`      | ✅        | Hard-coded        | Connection string MySQL    |
 
 ---
 
 ## 18. Ranh Giới Module
 
-```mermaid
-graph LR
-    subgraph API["🌐 API Layer"]
-        A1["chat_routes.py"]
-    end
-
-    subgraph AUTH["🔐 Auth Layer"]
-        A2["auth.py"]
-    end
-
-    subgraph CORE["⚙️ Core"]
-        C1["config.py"]
-        C2["database.py"]
-        C3["prompt.py"]
-    end
-
-    subgraph SERVICE["📦 Service Layer"]
-        S1["chat_service.py<br/>Điều phối SSE"]
-        S2["rag_service.py<br/>Dispatcher"]
-        S3["router_service.py<br/>Intent Classifier"]
-        S4["db_query_service.py<br/>CSDL + RBAC"]
-        S5["llm_service.py<br/>Gemini Client"]
-        S6["retriever_service.py<br/>Vector Search"]
-        S7["embedding_service.py<br/>Embedding"]
-    end
-
-    subgraph REPO["📂 Repository"]
-        R1["session_repository"]
-        R2["message_repository"]
-    end
-
-    subgraph DATA_LAYER["💾 Data"]
-        D1[("MySQL")]
-        D2[("ChromaDB")]
-    end
-
-    A1 --> AUTH
-    A1 --> S1
-    S1 --> S2
-    S1 --> R2
-    S2 --> S3
-    S2 --> S4
-    S2 --> S5
-    S2 --> S6
-    S4 --> D1
-    S6 --> D2
-    R1 --> D1
-    R2 --> D1
-
-    style API fill:#e94560,stroke:#1a1a2e,color:#fff
-    style AUTH fill:#f39c12,stroke:#1a1a2e,color:#fff
-    style CORE fill:#16213e,stroke:#0f3460,color:#fff
-    style SERVICE fill:#0f3460,stroke:#533483,color:#fff
-    style REPO fill:#16213e,stroke:#0f3460,color:#fff
-    style DATA_LAYER fill:#1a1a2e,stroke:#e94560,color:#fff
+```
+  ┌─────────────────────────────────────────────────────────────────────────────────────────┐
+  │                                                                                         │
+  │   ┌──────────────┐         ┌──────────────┐                                             │
+  │   │ 🌐 API Layer │────────▶│ 🔐 Auth Layer│                                             │
+  │   │ chat_routes  │         │ auth.py      │                                             │
+  │   └──────┬───────┘         └──────────────┘                                             │
+  │          │                                                                              │
+  │          ▼                                                                              │
+  │   ┌──────────────────────────────────────────────────────────────────────────────┐      │
+  │   │                        📦 SERVICE LAYER                                      │      │
+  │   │                                                                              │      │
+  │   │   ┌──────────────────┐                                                       │      │
+  │   │   │ chat_service.py  │──────┐                                                │      │
+  │   │   │ Điều phối SSE    │      │                                                │      │
+  │   │   └──────────────────┘      ▼                                                │      │
+  │   │                      ┌──────────────────┐                                    │      │
+  │   │                      │ rag_service.py   │                                    │      │
+  │   │                      │ Dispatcher       │                                    │      │
+  │   │                      └─┬──────┬─────┬───┘                                    │      │
+  │   │                        │      │     │                                        │      │
+  │   │              ┌─────────┘      │     └─────────┐                              │      │
+  │   │              ▼                ▼               ▼                              │      │
+  │   │  ┌──────────────────┐ ┌──────────────┐ ┌──────────────────┐                  │      │
+  │   │  │ router_service   │ │ db_query_svc │ │ llm_service.py   │                  │      │
+  │   │  │ Intent Classifier│ │ CSDL + RBAC  │ │ Gemini Client    │                  │      │
+  │   │  └──────────────────┘ └──────┬───────┘ └────────┬─────────┘                  │      │
+  │   │                              │                  │                            │      │
+  │   │  ┌──────────────────┐        │                  │                            │      │
+  │   │  │ retriever_svc    │        │                  │                            │      │
+  │   │  │ Vector Search    │        │                  │    ┌──────────────────┐     │      │
+  │   │  └──────────┬───────┘        │                  │    │ embedding_svc    │     │      │
+  │   │             │                │                  │    │ Embedding        │     │      │
+  │   └─────────────┼────────────────┼──────────────────┼────┴──────────────────┘     │      │
+  │                 │                │                  │                             │      │
+  │   ┌─────────────┼────────────────┼──────────────────┼────────────────────────┐    │      │
+  │   │             │   📂 REPOSITORY LAYER             │                        │    │      │
+  │   │             │   ┌──────────────────┐  ┌──────────────────┐               │    │      │
+  │   │             │   │ session_repo     │  │ message_repo     │               │    │      │
+  │   │             │   └────────┬─────────┘  └────────┬─────────┘               │    │      │
+  │   └─────────────┼────────────┼─────────────────────┼─────────────────────────┘    │      │
+  │                 │            │                     │                              │      │
+  └─────────────────┼────────────┼─────────────────────┼──────────────────────────────┘      │
+                    │            │                     │                                     │
+                    ▼            ▼                     ▼                                     │
+  ┌──────────────────────────────────────────────────────────────────────────────────────┐   │
+  │                           💾 DATA LAYER                                               │   │
+  │                                                                                       │   │
+  │        ┌──────────────────┐              ┌──────────────────┐                          │   │
+  │        │ ChromaDB         │              │ MySQL            │                          │   │
+  │        └──────────────────┘              └──────────────────┘                          │   │
+  │                                                                                       │   │
+  └───────────────────────────────────────────────────────────────────────────────────────┘   │
+                                                                                              │
+                                      ┌──────────────────┐                                    │
+                                      │ 🌐 Google Gemini │◀───────────────────────────────────┘
+                                      │ API (External)   │
+                                      └──────────────────┘
 ```
 
-| Module | Trách Nhiệm |
-|--------|-------------|
-| `app/api` | HTTP endpoints, dependency injection, response type |
-| `app/auth` | Xác thực JWT và tạo RagPrincipal |
-| `app/core` | Config, database engine, prompt template dùng chung |
-| `app/models` | SQLAlchemy table mapping (ORM) |
-| `app/repositories` | CRUD/query database |
-| `app/schemas` | Pydantic request/response models |
-| `app/services` | Business logic: dispatching, intent classification, RAG, LLM streaming, DB query |
-| `scripts` | Xử lý dữ liệu offline (ingestion) |
-| `data` | Nguồn dữ liệu CSV gốc |
-| `vector_db` | ChromaDB persisted vectors |
+### Bảng trách nhiệm Module:
+
+| Module             | Trách Nhiệm                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `app/api`          | HTTP endpoints, dependency injection, response type                                    |
+| `app/auth`         | Xác thực JWT và tạo RagPrincipal                                                      |
+| `app/core`         | Config, database engine, prompt template dùng chung                                    |
+| `app/models`       | SQLAlchemy table mapping (ORM)                                                         |
+| `app/repositories` | CRUD/query database                                                                    |
+| `app/schemas`      | Pydantic request/response models                                                       |
+| `app/services`     | Business logic: dispatching, intent classification, RAG, LLM streaming, DB query       |
+| `scripts`          | Xử lý dữ liệu offline (ingestion)                                                     |
+| `data`             | Nguồn dữ liệu CSV gốc                                                                 |
+| `vector_db`        | ChromaDB persisted vectors                                                             |
 
 ---
 

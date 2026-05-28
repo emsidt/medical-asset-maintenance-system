@@ -2,16 +2,29 @@ import json
 import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from app.core.config import GOOGLE_API_KEY
+from app.core.config import GOOGLE_API_KEY, GROQ_API_KEY
+from langchain_groq import ChatGroq
+
 
 logger = logging.getLogger(__name__)
 
-# Khởi tạo mô hình LLM với response_mime_type là JSON để đảm bảo đầu ra JSON hợp lệ
-router_llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
-    google_api_key=GOOGLE_API_KEY,
+# # Khởi tạo mô hình LLM với response_mime_type là JSON để đảm bảo đầu ra JSON hợp lệ
+# router_llm = ChatGoogleGenerativeAI(
+#     model="gemini-2.0-flash",
+#     google_api_key=GOOGLE_API_KEY,
+#     temperature=0.0,
+#     response_mime_type="application/json"
+# )
+
+router_llm = ChatGroq(
+    model="llama-3.3-70b-versatile",
+    api_key=GROQ_API_KEY,
     temperature=0.0,
-    response_mime_type="application/json"
+    model_kwargs={
+        "response_format": {
+            "type": "json_object"
+        }
+    }
 )
 
 

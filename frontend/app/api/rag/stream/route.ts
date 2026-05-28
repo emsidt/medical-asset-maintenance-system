@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     const ragToken = await issueRagToken();
+    console.log(ragToken.tokenType);
     const response = await fetch(joinRagUrl(ragToken.ragBaseUrl, "/stream"), {
       method: "POST",
       headers: {
