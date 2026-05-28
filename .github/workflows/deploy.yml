@@ -24,10 +24,16 @@ jobs:
       
       - name: Prepare kubeconfig and SSH tunnel
         shell: bash
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
         run: |
           mkdir -p ~/.kube ~/.ssh
-          printf '%s' "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
-          printf '%s' "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/vm_key
+          echo "$KUBE_CONFIG" > ~/.kube/config
+          echo "$VM_SSH_KEY" > ~/.ssh/vm_key
+          # Đảm bảo có dòng trống ở cuối file bằng lệnh echo rỗng (giúp tránh lỗi libcrypto)
+          echo "" >> ~/.ssh/vm_key
+          
           chmod 600 ~/.ssh/vm_key
           ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/vm_key -fN \
