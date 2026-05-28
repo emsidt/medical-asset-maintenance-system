@@ -64,4 +64,4 @@ async def stream_endpoint(
             user_role=principal.role
         ),
         media_type="text/event-stream"
-    )
+    )
