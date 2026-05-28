@@ -64,6 +64,12 @@ public class MaintenanceControllerApiTest {
     private com.medical.system.repository.MaintenanceScheduleRepository maintenanceScheduleRepository;
 
     @Autowired
+    private com.medical.system.repository.NotificationRepository notificationRepository;
+
+    @Autowired
+    private com.medical.system.repository.ServiceLogRepository serviceLogRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -78,6 +84,8 @@ public class MaintenanceControllerApiTest {
 
     @BeforeEach
     void setup() {
+        notificationRepository.deleteAll();
+        serviceLogRepository.deleteAll();
         maintenanceScheduleRepository.deleteAll();
         serviceRequestRepository.deleteAll();
         assetRepository.deleteAll();
@@ -105,6 +113,7 @@ public class MaintenanceControllerApiTest {
                 .asset(asset)
                 .status(RequestStatus.ASSIGNED)
                 .assignedEngineer(engineer1)
+                .reportedBy(engineer1)
                 .description("X-Ray broken")
                 .createdAt(LocalDateTime.now())
                 .build();
