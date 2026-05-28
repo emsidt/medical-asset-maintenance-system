@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { isRagStandaloneMode } from "@/lib/rag-server";
+import { RagChatWidget } from "@/components/features/RagChatWidget";
 
 export default async function MainLayout({
   children,
@@ -11,14 +13,17 @@ export default async function MainLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
+  const isStandaloneRag = isRagStandaloneMode();
 
-  if (!session) {
+  if (!session && !isStandaloneRag) {
     redirect("/login");
   }
 
   const user = {
-    username: session.user?.name || session.user?.email || undefined,
-    role: (session.user as { role: 'ADMIN' | 'DOCTOR' | 'ENGINEER' }).role,
+    username: session?.user?.name || session?.user?.email || "mock-admin",
+    role: session
+      ? (session.user as { role: 'ADMIN' | 'DOCTOR' | 'ENGINEER' }).role
+      : "ADMIN" as const,
   };
 
   return (
@@ -31,6 +36,7 @@ export default async function MainLayout({
             {children}
           </main>
         </div>
+        <RagChatWidget />
       </div>
     </NotificationProvider>
   );

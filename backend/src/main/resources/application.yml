@@ -56,3 +56,12 @@ management:
   metrics:
     tags:
       application: asset-maintenance
+
+rag:
+  service:
+    public-url: ${RAG_PUBLIC_URL:http://localhost:5000}
+  jwt:
+    secret: ${RAG_JWT_SECRET:change-this-to-a-long-random-secret-at-least-32-bytes}
+    expiration-ms: ${RAG_JWT_EXPIRATION_MS:900000}
+    issuer: medical-backend
+    audience: rag-service

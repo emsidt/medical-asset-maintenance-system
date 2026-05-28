@@ -70,6 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/inventory/**").hasAnyRole("ENGINEER", "ADMIN")
                         .requestMatchers("/api/departments/**").authenticated()
                         .requestMatchers("/api/analytics/**").authenticated()
+                        .requestMatchers("/api/rag/**").authenticated()
                         // General secured endpoints
                         .requestMatchers("/api/assets/**").authenticated()
 
