@@ -9,3 +9,11 @@ resources:
   - backend.yaml
   - frontend.yaml
   - ingress.yaml
+
+images:
+  - name: medical-backend
+    newName: ghcr.io/shimamurahougetsu1337/medical-asset-maintenance-system-backend
+    newTag: latest
+  - name: medical-frontend
+    newName: ghcr.io/shimamurahougetsu1337/medical-asset-maintenance-system-frontend
+    newTag: latest
