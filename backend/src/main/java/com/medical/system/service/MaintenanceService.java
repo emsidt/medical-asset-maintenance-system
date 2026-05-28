@@ -271,7 +271,7 @@ public class MaintenanceService {
 
         if (serviceRequest.getAssignedEngineer() != null
                 && !serviceRequest.getAssignedEngineer().getId().equals(engineer.getId())) {
-            throw new BusinessException("Repair request is assigned to another engineer");
+            throw new org.springframework.security.access.AccessDeniedException("Repair request is assigned to another engineer");
         }
 
         // Create Service Log

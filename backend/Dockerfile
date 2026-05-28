@@ -5,11 +5,11 @@ WORKDIR /app
 
 # Copy pom.xml and download dependencies to leverage Docker layer caching
 COPY pom.xml .
-RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -B || true
 
 # Copy src and build the application
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Run stage
 FROM eclipse-temurin:21-jre-alpine
@@ -19,7 +19,8 @@ WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
-COPY --from=build /app/target/*.jar app.jar
+# Chỉ định tên chính xác để tránh lỗi copy nhiều file (như *-plain.jar)
+COPY --from=build /app/target/asset-maintenance-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 
