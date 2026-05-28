@@ -59,7 +59,9 @@ async def stream_endpoint(
         stream_chat(
             db=db,
             session_id=request.sessionId,
-            user_message=request.message
+            user_message=request.message,
+            username=principal.username,
+            user_role=principal.role
         ),
         media_type="text/event-stream"
-    )
+    )

@@ -8,7 +8,9 @@ from app.repositories.message_repository import get_message_from_session
 async def stream_chat(
     db: AsyncSession,
     session_id: str,
-    user_message: str
+    user_message: str,
+    username: str,
+    user_role: str
 ):
 
     await save_message(
@@ -22,7 +24,14 @@ async def stream_chat(
 
     full_answer = ""
 
-    async for token in ask_question(user_message, session_id, history):
+    async for token in ask_question(
+        question=user_message,
+        session_id=session_id,
+        history=history,
+        db=db,
+        username=username,
+        user_role=user_role
+    ):
 
         full_answer += token
 
@@ -41,4 +50,4 @@ async def stream_chat(
     yield (
         "event: done\n"
         f"data: {assistant_message.id}\n\n"
-    )
+    )
