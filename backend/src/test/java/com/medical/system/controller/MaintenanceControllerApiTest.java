@@ -61,6 +61,9 @@ public class MaintenanceControllerApiTest {
     private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
+    private com.medical.system.repository.MaintenanceScheduleRepository maintenanceScheduleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -75,11 +78,11 @@ public class MaintenanceControllerApiTest {
 
     @BeforeEach
     void setup() {
+        maintenanceScheduleRepository.deleteAll();
         serviceRequestRepository.deleteAll();
         assetRepository.deleteAll();
         userRepository.deleteAll();
 
-        // 1. Tạo 2 Engineer
         engineer1 = new User();
         engineer1.setUsername("engineer1");
         engineer1.setPassword(passwordEncoder.encode("password"));
@@ -92,14 +95,12 @@ public class MaintenanceControllerApiTest {
         hackerEngineer.setRole(Role.ENGINEER);
         userRepository.save(hackerEngineer);
 
-        // 2. Tạo Asset
         Asset asset = new Asset();
         asset.setName("X-Ray Machine");
         asset.setCode("XR-001");
         asset.setStatus(AssetStatus.UNDER_MAINTENANCE);
         assetRepository.save(asset);
 
-        // 3. Tạo Service Request được GIAO CHO engineer1
         targetRequest = ServiceRequest.builder()
                 .asset(asset)
                 .status(RequestStatus.ASSIGNED)
@@ -128,17 +129,15 @@ public class MaintenanceControllerApiTest {
     @Test
     @DisplayName("Negative Path (IDOR Security): Hacker Engineer cố gắng hoàn thành task của Engineer khác -> Phải báo lỗi 403")
     void testCompleteRepair_IdorAttack_Returns403() throws Exception {
-        // Hacker đăng nhập và lấy token của mình
         String hackerToken = jwtService.generateAccessToken(hackerEngineer.getUsername(), hackerEngineer.getRole().name());
         
         CompleteRepairRequest req = new CompleteRepairRequest();
         req.setResolutionDetails("Hacker completes task to steal reward");
 
-        // Hacker gọi API để hoàn thành task của Engineer 1
         mockMvc.perform(post("/api/service-requests/" + targetRequest.getId() + "/complete")
                 .header("Authorization", "Bearer " + hackerToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isForbidden()); // Cực kỳ quan trọng: Lỗi này phải là 403 Forbidden chứ không phải 400 Bad Request
+                .andExpect(status().isForbidden());
     }
 }
