@@ -12,7 +12,8 @@ on:
 jobs:
   deploy:
     name: Continuous Deployment
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: false # Temporarily disabled because VPS is cancelled
     runs-on: ubuntu-latest
     environment: production
     
@@ -31,6 +32,9 @@ jobs:
         run: |
           mkdir -p ~/.kube ~/.ssh
           echo "$KUBE_CONFIG" > ~/.kube/config
+          # Tự động sửa lại IP trong KubeConfig thành 127.0.0.1 để nó đi xuyên qua "Đường hầm SSH"
+          # Việc này giúp tránh lỗi Timeout khi tường lửa của VPS chặn cổng 6443 từ bên ngoài
+          sed -i 's/${{ secrets.VM_HOST }}/127.0.0.1/g' ~/.kube/config
           # Giải mã Base64 để đảm bảo 100% định dạng không bị sai lệch bởi Windows/Trình duyệt
           echo "$VM_SSH_KEY" | base64 -d > ~/.ssh/vm_key
           
