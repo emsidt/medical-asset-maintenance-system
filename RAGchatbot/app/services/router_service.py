@@ -2,7 +2,7 @@ import json
 import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from app.core.config import GOOGLE_API_KEY, GROQ_API_KEY
+from app.core.config import GOOGLE_API_KEY, GOOGLE_MODEL, GROQ_API_KEY, GROQ_MODEL, RAG_LLM_PROVIDER
 from langchain_groq import ChatGroq
 
 
@@ -16,16 +16,36 @@ logger = logging.getLogger(__name__)
 #     response_mime_type="application/json"
 # )
 
-router_llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    api_key=GROQ_API_KEY,
-    temperature=0.0,
-    model_kwargs={
-        "response_format": {
-            "type": "json_object"
-        }
-    }
-)
+def create_router_llm():
+    provider = RAG_LLM_PROVIDER
+
+    if provider not in {"auto", "google", "groq"}:
+        raise ValueError("RAG_LLM_PROVIDER must be one of: auto, google, groq")
+
+    if provider in {"auto", "google"} and (GOOGLE_API_KEY or "").strip():
+        return ChatGoogleGenerativeAI(
+            model=GOOGLE_MODEL,
+            google_api_key=GOOGLE_API_KEY,
+            temperature=0.0,
+            response_mime_type="application/json"
+        )
+
+    if provider in {"auto", "groq"} and (GROQ_API_KEY or "").strip():
+        return ChatGroq(
+            model=GROQ_MODEL,
+            api_key=GROQ_API_KEY,
+            temperature=0.0,
+            model_kwargs={
+                "response_format": {
+                    "type": "json_object"
+                }
+            }
+        )
+
+    return None
+
+
+router_llm = create_router_llm()
 
 
 CLASSIFIER_SYSTEM_PROMPT = """
@@ -72,8 +92,6 @@ async def classify_intent(message: str, history) -> dict:
         SystemMessage(content=CLASSIFIER_SYSTEM_PROMPT)
     ]
 
-    print("GOOGLE_API_KEY" + GOOGLE_API_KEY)
-    
     # # Thêm lịch sử trò chuyện (tối đa 5 lượt gần nhất để không làm loãng phân loại)
     # history_limit = history[-10:] if len(history) > 10 else history
     # for msg in history_limit:
@@ -100,6 +118,37 @@ async def classify_intent(message: str, history) -> dict:
         }
     except Exception as e:
         logger.error(f"Error classifying intent: {e}")
+        normalized_message = message.lower()
+
+        if any(keyword in normalized_message for keyword in [
+            "sua chua",
+            "sửa chữa",
+            "dang sua",
+            "đang sửa",
+            "phieu sua",
+            "phiếu sửa",
+            "trang thai",
+            "trạng thái",
+            "bao nhieu thiet bi",
+            "bao nhiêu thiết bị",
+        ]):
+            return {
+                "intent": "REPAIR_STATUS",
+                "parameters": {"query_term": ""}
+            }
+
+        if any(keyword in normalized_message for keyword in [
+            "bao hong",
+            "báo hỏng",
+            "hong",
+            "hỏng",
+            "tao phieu",
+            "tạo phiếu",
+        ]):
+            return {
+                "intent": "CREATE_REPAIR_REQUEST",
+                "parameters": {}
+            }
         # Mặc định về GENERAL nếu xảy ra lỗi
         return {
             "intent": "GENERAL",
