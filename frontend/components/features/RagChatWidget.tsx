@@ -3,6 +3,7 @@
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useSession } from "next-auth/react";
 import { Bot, Loader2, MessageCircle, Send, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,8 +22,7 @@ interface RagSessionResponse {
   sessionId: string;
 }
 
-const SESSION_STORAGE_KEY = "rag_chat_session_id";
-const MESSAGES_STORAGE_KEY = "rag_chat_messages";
+const STORAGE_PREFIX = "rag_chat";
 
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
@@ -51,9 +51,9 @@ function createMessage(role: ChatRole, content: string): ChatMessage {
   };
 }
 
-function loadMessages() {
+function loadMessages(storageKey: string) {
   try {
-    const raw = localStorage.getItem(MESSAGES_STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ChatMessage[];
     return Array.isArray(parsed)
@@ -136,6 +136,7 @@ function drainSseEvents(buffer: string, flush = false) {
 }
 
 export function RagChatWidget() {
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -149,29 +150,66 @@ export function RagChatWidget() {
   const assistantContentRef = useRef("");
   const pendingTokenRef = useRef("");
   const animationFrameRef = useRef<number | null>(null);
+  const loadedStorageScopeRef = useRef<string | null>(null);
 
   const canSend = useMemo(() => input.trim().length > 0 && !isSending, [input, isSending]);
+  const storageScope = useMemo(() => {
+    if (status === "loading") return null;
+
+    const user = session?.user as { name?: string | null; email?: string | null; role?: string | null } | undefined;
+    const username = user?.name || user?.email;
+    if (!username) return null;
+
+    return `${user?.role || "USER"}:${username}`;
+  }, [session, status]);
+
+  const storageKeys = useMemo(() => {
+    if (!storageScope) return null;
+
+    return {
+      session: `${STORAGE_PREFIX}:${storageScope}:session_id`,
+      messages: `${STORAGE_PREFIX}:${storageScope}:messages`,
+    };
+  }, [storageScope]);
 
   useEffect(() => {
-    setSessionId(localStorage.getItem(SESSION_STORAGE_KEY));
-    setMessages(loadMessages());
-    setHasLoadedHistory(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedHistory) return;
-
-    localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
-    scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [hasLoadedHistory, messages]);
-
-  useEffect(() => {
-    if (sessionId) {
-      localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
-    } else {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
+    if (!storageKeys || !storageScope) {
+      loadedStorageScopeRef.current = null;
+      setSessionId(null);
+      setMessages([]);
+      setHasLoadedHistory(false);
+      return;
     }
-  }, [sessionId]);
+
+    abortRef.current?.abort();
+    assistantMessageIdRef.current = null;
+    assistantContentRef.current = "";
+    pendingTokenRef.current = "";
+    loadedStorageScopeRef.current = storageScope;
+    setSessionId(localStorage.getItem(storageKeys.session));
+    setMessages(loadMessages(storageKeys.messages));
+    setInput("");
+    setError(null);
+    setIsSending(false);
+    setHasLoadedHistory(true);
+  }, [storageKeys, storageScope]);
+
+  useEffect(() => {
+    if (!hasLoadedHistory || !storageKeys || loadedStorageScopeRef.current !== storageScope) return;
+
+    localStorage.setItem(storageKeys.messages, JSON.stringify(messages));
+    scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [hasLoadedHistory, messages, storageKeys, storageScope]);
+
+  useEffect(() => {
+    if (!storageKeys || loadedStorageScopeRef.current !== storageScope) return;
+
+    if (sessionId) {
+      localStorage.setItem(storageKeys.session, sessionId);
+    } else {
+      localStorage.removeItem(storageKeys.session);
+    }
+  }, [sessionId, storageKeys, storageScope]);
 
   useEffect(() => {
     return () => {
