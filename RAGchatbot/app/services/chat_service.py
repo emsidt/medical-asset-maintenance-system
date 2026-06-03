@@ -5,6 +5,12 @@ from app.services.rag_service import ask_question
 from app.repositories.message_repository import get_message_from_session
 
 
+def format_sse_event(event: str, data: str) -> str:
+    lines = str(data).splitlines() or [""]
+    payload = "\n".join(f"data: {line}" for line in lines)
+    return f"event: {event}\n{payload}\n\n"
+
+
 async def stream_chat(
     db: AsyncSession,
     session_id: str,
@@ -35,10 +41,7 @@ async def stream_chat(
 
         full_answer += token
 
-        yield (
-            f"event: token\n"
-            f"data: {token}\n\n"
-        )
+        yield format_sse_event("token", token)
 
     assistant_message = await save_message(
         db=db,
@@ -47,7 +50,4 @@ async def stream_chat(
         content=full_answer
     )
 
-    yield (
-        "event: done\n"
-        f"data: {assistant_message.id}\n\n"
-    )
+    yield format_sse_event("done", assistant_message.id)
