@@ -74,6 +74,7 @@ async def ask_question(
     params = classification.get("parameters", {})
     
     logger.info(f"Classified intent: {intent} with params: {params}")
+    llm_fallback_answer = None
 
     # 2. Xây dựng lịch sử trò chuyện thành các tin nhắn LangChain
     messages = []
@@ -98,9 +99,10 @@ async def ask_question(
         query_term = params.get("query_term", "")
         # Gọi db_query_service để tìm kiếm phiếu sửa chữa (kèm bảo mật RBAC)
         records = await query_repair_status(db, query_term, username, user_role)
+        llm_fallback_answer = format_repair_status_fallback(records, username)
 
         if not is_llm_configured():
-            yield format_repair_status_fallback(records, username)
+            yield llm_fallback_answer
             return
         
         if not records:
@@ -229,6 +231,10 @@ Câu hỏi hiện tại của người dùng:
                 yield chunk.content
     except Exception as exc:
         logger.exception("Error streaming LLM response: %s", exc)
+        if llm_fallback_answer:
+            yield llm_fallback_answer
+            return
+
         yield (
             "RAG service da nhan cau hoi nhung khong the goi LLM luc nay. "
             "Vui long kiem tra GROQ_API_KEY/GOOGLE_API_KEY hoac ket noi mang cua RAG service."
