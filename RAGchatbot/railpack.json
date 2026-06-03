@@ -1,0 +1,6 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "startCommand": "uvicorn app.__main__:app --host 0.0.0.0 --port $PORT"
+  }
+}
